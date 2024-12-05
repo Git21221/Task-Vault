@@ -1,0 +1,61 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+build/
+
+# Production environment variables
+.env
+.env.production
+
+# Next.js build output (if applicable)
+.next/
+
+# Temporary files
+tmp/
+temp/
+
+# Debugging files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Test coverage
+coverage/
+
+# OS-specific files
+Thumbs.db
+*.DS_Store
+
+# MongoDB database files
+*.lock
+dump/
+
+# Lint and formatting tools
+.eslintcache
+.prettiercache
+
+# Logs and error tracking
+*.pid
+*.seed
+
+# Optional npm cache directory
+.npm/
+
+# IDE specific
+*.code-workspace
+
+# Miscellaneous
+*.log*
+*.bak
