@@ -1,3 +1,4 @@
+import mongoose, { mongo } from "mongoose";
 import { Role } from "../models/role.model.js";
 import { User } from "../models/user.model.js";
 import { apiErrorHandler } from "../utils/apiErrorHandler.util.js";
@@ -168,3 +169,308 @@ export const loginAdmin = asyncFunctionHandler(async (req, res) => {
     .cookie("refreshToken", refreshToken, refreshTokenOptions)
     .json(new apiResponse(200, "Admin logged in successfully", loggedInAdmin));
 });
+
+export const updateAdminProfile = asyncFunctionHandler(async (req, res) => {
+  const { fullName, email, password, username } = req?.body;
+  const { userId } = req?.params;
+  const loggedInAdminId = req?.user?._id;
+  const role = req?.role;
+  //-----------sanitize inputs------------->
+  if (!loggedInAdminId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have the permission to update admin profile"
+        )
+      );
+  if (!userId)
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "User id is required"));
+  const admin = await User.findById(userId);
+  if (!admin)
+    return res.status(404).json(new apiErrorHandler(404, "Admin not found"));
+  if (fullName) admin.fullName = fullName;
+  if (email) admin.email = email;
+  if (password) admin.password = password;
+  if (username) admin.username = username;
+  const adminAfterSave = await admin.save();
+  if (!adminAfterSave)
+    return res
+      .status(500)
+      .json(
+        new apiErrorHandler(500, "Admin not updated for some unknown reason")
+      );
+  return res
+    .status(200)
+    .json(new apiResponse(200, "Admin updated successfully", admin));
+});
+
+export const deleteAdmin = asyncFunctionHandler(async (req, res) => {
+  const { userId } = req?.params;
+  const role = req?.role;
+  const loggedInAdminId = req?.user?._id;
+  if (!loggedInAdminId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have the permission to delete an admin"
+        )
+      );
+  if (!userId)
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "User id is required"));
+  const admin = await User.findById(userId);
+  if (!admin)
+    return res.status(404).json(new apiErrorHandler(404, "Admin not found"));
+  const deleteAdmin = await admin.deleteOne();
+  if (!deleteAdmin)
+    return res
+      .status(500)
+      .json(
+        new apiErrorHandler(500, "Admin not deleted for some unknown reason")
+      );
+  return res
+    .status(200)
+    .json(new apiResponse(200, "Admin deleted successfully"));
+});
+
+export const getAdminProfile = asyncFunctionHandler(async (req, res) => {
+  const { userId } = req?.params;
+  const loggedInAdminId = req?.user?._id;
+  const role = req?.role;
+  if (!loggedInAdminId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!role) {
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have the permission to get admin profile"
+        )
+      );
+  }
+  if (!userId)
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "User id is required"));
+
+  const adminFullProfile = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "adminRole",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
+  if (!adminFullProfile)
+    return res
+      .status(500)
+      .json(
+        new apiErrorHandler(500, "Admin not found for some unknown reason")
+      );
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, "Admin found", adminFullProfile));
+});
+
+//controller for getting all permissions by role regardless of the role of the logged in user
+export const getAllPermissionsByRole = asyncFunctionHandler(
+  async (req, res) => {
+    const loggedInAdminId = req?.user?._id;
+    const admin = await User.aggregate([
+      {
+        $match: {
+          _id: loggedInAdminId,
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+    ]);
+    const roleName = admin[0]?.role[0]?.name;
+    let allPersmissionsByRoleForAdmin,
+      allPersmissionsByRoleForModerator,
+      allPermissionsByRoleForUser;
+    switch (roleName) {
+      case process.env.ADMIN_ROLE:
+        allPersmissionsByRoleForAdmin = await Role.aggregate([
+          {
+            $lookup: {
+              from: "permissions",
+              localField: "permissions",
+              foreignField: "_id",
+              as: "permissions",
+            },
+          },
+        ]);
+        break;
+      case process.env.MODERATOR_ROLE:
+        allPersmissionsByRoleForModerator = await Role.aggregate([
+          {
+            $match: {
+              name: { $ne: process.env.ADMIN_ROLE },
+            },
+          },
+          {
+            $lookup: {
+              from: "permissions",
+              localField: "permissions",
+              foreignField: "_id",
+              as: "permissions",
+            },
+          },
+        ]);
+        break;
+      case process.env.USER_ROLE:
+        allPermissionsByRoleForUser = await Role.aggregate([
+          {
+            $match: {
+              name: { $ne: process.env.ADMIN_ROLE },
+              name: { $ne: process.env.MODERATOR_ROLE },
+            },
+          },
+          {
+            $lookup: {
+              from: "permissions",
+              localField: "permissions",
+              foreignField: "_id",
+              as: "permissions",
+            },
+          },
+        ]);
+        break;
+    }
+
+    if (
+      !allPersmissionsByRoleForAdmin ||
+      !allPersmissionsByRoleForModerator ||
+      !allPermissionsByRoleForUser
+    )
+      return res
+        .status(500)
+        .json(
+          new apiErrorHandler(
+            500,
+            "Permissions not found for some unknown reason"
+          )
+        );
+
+    if (roleName === process.env.ADMIN_ROLE)
+      return res
+        .status(200)
+        .json(
+          new apiResponse(
+            200,
+            "Permissions found",
+            allPersmissionsByRoleForAdmin
+          )
+        );
+    if (roleName === process.env.MODERATOR_ROLE)
+      return res
+        .status(200)
+        .json(
+          new apiResponse(
+            200,
+            "Permissions found",
+            allPersmissionsByRoleForModerator
+          )
+        );
+    if (roleName === process.env.USER_ROLE)
+      return res
+        .status(200)
+        .json(
+          new apiResponse(200, "Permissions found", allPermissionsByRoleForUser)
+        );
+  }
+);
+
+export const updateModeratorRoleByAdmin = asyncFunctionHandler(
+  async (req, res) => {
+    const loggedInAdminId = req?.user?._id;
+    const admin = await User.aggregate([
+      {
+        $match: {
+          _id: loggedInAdminId,
+        },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+    ]);
+    const roleName = admin[0]?.role[0]?.name;
+    if (roleName === process.env.ADMIN_ROLE) {
+      const { roleId, permissions } = req?.body;
+      if (permissions.length === 0)
+        return res
+          .status(400)
+          .json(
+            new apiErrorHandler(400, "Permissions are required to update role")
+          );
+      const role = await Role.findById(new mongoose.Types.ObjectId(roleId)); //also findByIdAndUpdate can be used
+      if (!role)
+        return res.status(404).json(new apiErrorHandler(404, "Role not found"));
+      if (role.name === process.env.MODERATOR_ROLE) {
+        role.permissions = permissions.map(
+          (permission) => new mongoose.Types.ObjectId(permission)
+        ); //in frontend permissions initial array should contain the initial permissions
+        const updatedRole = await role.save();
+        if (!updatedRole)
+          return res
+            .status(500)
+            .json(
+              new apiErrorHandler(
+                500,
+                "Role not updated for some unknown reason"
+              )
+            );
+
+        return res.status(200).json(new apiResponse(200, "Role updated", role));
+      }
+    }
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(401, "You don't have the permission to update role")
+      );
+  }
+);

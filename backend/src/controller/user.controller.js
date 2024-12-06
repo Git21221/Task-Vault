@@ -1,4 +1,4 @@
-import { Permission } from "../models/permission.model.js";
+import mongoose from "mongoose";
 import { Role } from "../models/role.model.js";
 import { User } from "../models/user.model.js";
 import { apiErrorHandler } from "../utils/apiErrorHandler.util.js";
@@ -163,7 +163,7 @@ export const loginUser = asyncFunctionHandler(async (req, res) => {
 });
 
 //controller to update a user
-export const updateProfile = asyncFunctionHandler(async (req, res) => {
+export const updateUserProfile = asyncFunctionHandler(async (req, res) => {
   const { fullName, email, password, username } = req?.body;
   const { userId } = req?.params;
   const loggedInUserId = req?.user?._id;
@@ -177,7 +177,7 @@ export const updateProfile = asyncFunctionHandler(async (req, res) => {
       .json(
         new apiErrorHandler(
           401,
-          "You don't have permission to update user profile"
+          "You don't have permission to update admin profile"
         )
       );
 
@@ -192,7 +192,13 @@ export const updateProfile = asyncFunctionHandler(async (req, res) => {
   if (email) user.email = email;
   if (password) user.password = password;
   if (username) user.username = username;
-  await user.save();
+  const userAfterSave = await user.save();
+  if (!userAfterSave)
+    return res
+      .status(500)
+      .json(
+        new apiErrorHandler(500, "User not updated for some unknown reason")
+      );
   return res
     .status(200)
     .json(new apiResponse(200, "User updated successfully", user));
@@ -200,7 +206,20 @@ export const updateProfile = asyncFunctionHandler(async (req, res) => {
 
 //controller to delete a user
 export const deleteUser = asyncFunctionHandler(async (req, res) => {
+  const loggedInUserId = req?.user?._id;
+  if (!loggedInUserId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
   const { userId } = req?.params;
+  const role = req?.role;
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have permission to delete user profile"
+        )
+      );
   if (!userId)
     return res
       .status(400)
@@ -208,8 +227,134 @@ export const deleteUser = asyncFunctionHandler(async (req, res) => {
   const user = await User.findById(userId);
   if (!user)
     return res.status(404).json(new apiErrorHandler(404, "User not found"));
-  await user.deleteOne();
+  const deletedUser = await user.deleteOne();
+  if (!deletedUser)
+    return res
+      .status(500)
+      .json(
+        new apiErrorHandler(500, "User not deleted for some unknown reason")
+      );
   return res
     .status(200)
     .json(new apiResponse(200, "User deleted successfully", user));
 });
+
+export const getUserProfile = asyncFunctionHandler(async (req, res) => {
+  const { userId } = req?.params;
+  const loggedInUserId = req?.user?._id;
+  const role = req?.role;
+  if (!loggedInUserId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have permission to get user profile"
+        )
+      );
+
+  if (!userId)
+    return res
+      .status(400)
+      .json(new apiErrorHandler(400, "User id is required"));
+
+  const userFullProfile = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "userRole",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
+  if (!userFullProfile)
+    return res.status(404).json(new apiErrorHandler(404, "User not found"));
+  return res
+    .status(200)
+    .json(new apiResponse(200, "User profile", userFullProfile));
+});
+
+export const getAllUsers = asyncFunctionHandler(async (req, res) => {
+  const loggedInUserId = req?.user?._id;
+  if (!loggedInUserId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  const roleOfLoggedInUser = await User.aggregate([
+    {
+      $match: {
+        _id: loggedInUserId,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+  ]);
+
+  const users = await User.aggregate([
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "updatedRoles",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $match: {
+        $expr: {
+          $and: [
+            { $gt: [{ $size: "$updatedRoles" }, 0] }, // Ensure updatedRoles[0] exists
+            { $eq: [{ $arrayElemAt: ["$updatedRoles.name", 0] }, "user"] },
+          ],
+        },
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
+  if (!users)
+    return res.status(404).json(new apiErrorHandler(404, "Users not found"));
+  const roleName = roleOfLoggedInUser[0]?.role[0]?.name;
+  if (
+    roleName === process.env.ADMIN_ROLE ||
+    roleName === process.env.MODERATOR_ROLE
+  ) {
+    return res.status(200).json(new apiResponse(200, "All Users", users));
+  }
+  return res.status(401).json(new apiErrorHandler(401, "You don't have permission to get all users"));
+});
+

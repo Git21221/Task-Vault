@@ -8,7 +8,7 @@ import {
   refreshTokenOptions,
 } from "../utils/refreshAccessToken.util.js";
 import { generateAccessAndRefreshToken } from "../utils/generateAccessRefreshToken.util.js";
-import { Permission } from "../models/permission.model.js";
+import mongoose from "mongoose";
 
 //controller for registering an moderator
 export const registerModerator = asyncFunctionHandler(async (req, res) => {
@@ -90,10 +90,10 @@ export const registerModerator = asyncFunctionHandler(async (req, res) => {
     name: {
       $in: [process.env.MODERATOR_ROLE],
     },
-  })
+  });
   //add moderator permissions
   const permissions = per[0].permissions;
-  
+
   const moderator = await User.create({
     fullName,
     email,
@@ -172,4 +172,124 @@ export const loginModerator = asyncFunctionHandler(async (req, res) => {
     .json(
       new apiResponse(200, "Moderator logged in successfully", loggedInmod)
     );
+});
+
+//controller to update a mod
+export const updateModProfile = asyncFunctionHandler(async (req, res) => {
+  const { fullName, email, password, username } = req?.body;
+  const userId = req?.params?.userId;
+  const loggedInModId = req?.user?._id;
+  const role = req?.role;
+  if (!loggedInModId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have the permission to update moderator profile"
+        )
+      );
+  if (!userId)
+    return res.status(400).json(new apiErrorHandler(400, "User id not found"));
+
+  const mod = await User.findById(userId);
+  if (!mod)
+    return res
+      .status(404)
+      .json(new apiErrorHandler(404, "Moderator not found"));
+  if (fullName) mod.fullName = fullName;
+  if (email) mod.email = email;
+  if (password) mod.password = password;
+  if (username) mod.username = username;
+  const modAfterSave = await mod.save();
+  if (!modAfterSave)
+    return res
+      .status(500)
+      .json(new apiErrorHandler(500, "Issue in updating moderator profile"));
+  return res.status(200).json(new apiResponse(200, "Moderator updated", mod));
+});
+
+export const deleteMod = asyncFunctionHandler(async (req, res) => {
+  const loggedInModId = req?.user?._id;
+  const role = req?.role;
+  const { userId } = req?.params;
+  if (!loggedInModId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have the permission to delete moderator"
+        )
+      );
+  if (!userId)
+    return res.status(400).json(new apiErrorHandler(400, "User id not found"));
+
+  const mod = await User.findById(userId);
+  if (!mod)
+    return res
+      .status(404)
+      .json(new apiErrorHandler(404, "Moderator not found"));
+  const modAfterDelete = await mod.deleteOne();
+  if (!modAfterDelete)
+    return res
+      .status(500)
+      .json(new apiErrorHandler(500, "Issue in deleting moderator"));
+  return res.status(200).json(new apiResponse(200, "Moderator deleted"));
+});
+
+export const getModProfile = asyncFunctionHandler(async (req, res) => {
+  const { userId } = req?.params;
+  const loggedInModId = req?.user?._id;
+  const role = req?.role;
+  if (!role)
+    return res
+      .status(401)
+      .json(
+        new apiErrorHandler(
+          401,
+          "You don't have the permission to get moderator profile"
+        )
+      );
+  if (!loggedInModId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  if (!userId)
+    return res.status(400).json(new apiErrorHandler(400, "User id not found"));
+  const modFullProfile = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "modRole",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
+  if (!modFullProfile)
+    return res
+      .status(500)
+      .json(new apiErrorHandler(500, "Issue in aggregating moderator profile"));
+  return res
+    .status(200)
+    .json(new apiResponse(200, "Moderator profile", modFullProfile));
 });

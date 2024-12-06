@@ -13,20 +13,16 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
 
       // <------------ check loggedin person ------------>
       const loggedInPerson = req?.user?._id;
-      console.log("loggedInPerson", loggedInPerson);
 
-      const action = req?.params?.profile_action_update;
-      console.log("action", action);
+      const action = req?.params?.actionType;
 
       if (!action)
         return res
           .status(400)
           .json(new apiErrorHandler(400, "Action not found"));
       const decodedActionType = action?.split("_")[0]; //profile, task, role
-      console.log("decodedActionType", decodedActionType);
 
       const decodedAction = `${action?.split("_")[1]}:${action?.split("_")[2]}`; //update, delete, read
-      console.log("decodedAction", decodedAction);
       if (!loggedInPerson)
         return res
           .status(401)
@@ -34,7 +30,6 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
             new apiErrorHandler(401, "Unauthorized in role middleware line 23")
           );
       const user = await User.findById(loggedInPerson);
-      console.log("user", user);
 
       if (!user)
         return res.status(404).json(new apiErrorHandler(404, "User not found"));
@@ -53,7 +48,6 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
           },
         },
       ]);
-      console.log("userWithRole", userWithRole);
 
       if (!userWithRole)
         return res
@@ -64,11 +58,9 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
 
       //loggedin
       const userWithRoleName = userWithRole[0]?.userRole[0]?.name;
-      console.log("userWithRoleName", userWithRoleName);
 
       //now I have role of loggedin person, let's check if he is higher than req.params or not
       // <------------ check role of the requested person ------------>
-      console.log("req.params.userId", new mongoose.Types.ObjectId(req?.params?.userId));
       const requestedPersonRole = await User.aggregate([
         {
           $match: { _id: new mongoose.Types.ObjectId(req?.params?.userId) },
@@ -82,7 +74,6 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
           },
         },
       ]);
-      console.log("requestedPersonRole", requestedPersonRole);
 
       if (!requestedPersonRole) {
         return res
@@ -129,17 +120,22 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
                 },
               },
             ]);
-
+            // console.log("adminPermissions", adminPermissions[0]);
             //check for permissions
-            adminPermissions[0]?.userPermissions?.filter((permission) => {
-              if (Object.keys(permission).includes(decodedActionType)) {
-                if (permission[decodedActionType].includes(decodedAction)) {
-                  req.role = userWithRole[0];
+            let flag = true;
+            adminPermissions[0]?.userPermissions?.forEach((permission) => {
+              if (flag === true) {
+                if (Object.keys(permission).includes(decodedActionType)) {
+                  if (permission[decodedActionType].includes(decodedAction)) {
+                    req.role = userWithRole[0];
+                    flag = false;
+                    console.log(permission[decodedActionType]);
+                  } else {
+                    req.role = null;
+                  }
                 } else {
                   req.role = null;
                 }
-              } else {
-                req.role = null;
               }
             });
           }
@@ -179,15 +175,19 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
             ]);
 
             //check for permissions
+            let flag = true;
             adminPermissions[0]?.userPermissions?.forEach((permission) => {
-              if (Object.keys(permission).includes(decodedActionType)) {
-                if (permission[decodedActionType].includes(decodedAction)) {
-                  req.role = userWithRole[0];
+              if (flag === true) {
+                if (Object.keys(permission).includes(decodedActionType)) {
+                  if (permission[decodedActionType].includes(decodedAction)) {
+                    req.role = userWithRole[0];
+                    flag = false;
+                  } else {
+                    req.role = null;
+                  }
                 } else {
                   req.role = null;
                 }
-              } else {
-                req.role = null;
               }
             });
           }
@@ -210,6 +210,8 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
             } else {
               req.role = null;
             }
+          } else {
+            req.role = null;
           }
 
           break;
