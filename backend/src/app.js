@@ -5,6 +5,7 @@ import { userRouter } from "./routes/user.route.js";
 import { adminRouter } from "./routes/admin.route.js";
 import { modRouter } from "./routes/mod.route.js";
 import cookieParser from "cookie-parser";
+import { taskRouter } from "./routes/task.route.js";
 
 export const app = express();
 
@@ -26,3 +27,5 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/admin", adminRouter);
 
 app.use("/api/v1/mod", modRouter);
+
+app.use("/api/v1/tasks", taskRouter);

@@ -363,8 +363,10 @@ export const getAllPermissionsByRole = asyncFunctionHandler(
         allPermissionsByRoleForUser = await Role.aggregate([
           {
             $match: {
-              name: { $ne: process.env.ADMIN_ROLE },
-              name: { $ne: process.env.MODERATOR_ROLE },
+              $and: [
+                { name: { $ne: process.env.ADMIN_ROLE } },
+                { name: { $ne: process.env.MODERATOR_ROLE } },
+              ],
             },
           },
           {
@@ -378,20 +380,6 @@ export const getAllPermissionsByRole = asyncFunctionHandler(
         ]);
         break;
     }
-
-    if (
-      !allPersmissionsByRoleForAdmin ||
-      !allPersmissionsByRoleForModerator ||
-      !allPermissionsByRoleForUser
-    )
-      return res
-        .status(500)
-        .json(
-          new apiErrorHandler(
-            500,
-            "Permissions not found for some unknown reason"
-          )
-        );
 
     if (roleName === process.env.ADMIN_ROLE)
       return res
@@ -419,6 +407,10 @@ export const getAllPermissionsByRole = asyncFunctionHandler(
         .json(
           new apiResponse(200, "Permissions found", allPermissionsByRoleForUser)
         );
+
+    return res
+      .status(500)
+      .json(new apiErrorHandler(500, "Permissions not found"));
   }
 );
 
