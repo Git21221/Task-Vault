@@ -4,9 +4,10 @@ import {
   getAdminProfile,
   getAllPermissionsByRole,
   loginAdmin,
+  promoteAndDemotePersonRoleByAdmin,
   registerAdmin,
   updateAdminProfile,
-  updateModeratorRoleByAdmin,
+  updateModeratorPermissionByAdmin,
 } from "../controller/admin.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { verifyRoleAndPermission } from "../middleware/role.middleware.js";
@@ -36,5 +37,15 @@ adminRouter.get(
 
 //can be accessed by admin, moderator and users
 adminRouter.get("/get-all-permissions", verifyJWT, getAllPermissionsByRole);
-adminRouter.put("/update-permissions-of-role", verifyJWT, updateModeratorRoleByAdmin);
+adminRouter.put(
+  "/update-permissions-of-role",
+  verifyJWT,
+  updateModeratorPermissionByAdmin
+);
+adminRouter.patch(
+  "/update-role-of-person/:userId/:actionType",
+  verifyJWT,
+  verifyRoleAndPermission,
+  promoteAndDemotePersonRoleByAdmin
+);
 export { adminRouter };

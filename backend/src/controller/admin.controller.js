@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import { Role } from "../models/role.model.js";
 import { User } from "../models/user.model.js";
 import { apiErrorHandler } from "../utils/apiErrorHandler.util.js";
@@ -170,6 +170,7 @@ export const loginAdmin = asyncFunctionHandler(async (req, res) => {
     .json(new apiResponse(200, "Admin logged in successfully", loggedInAdmin));
 });
 
+//controller for updating admin profile
 export const updateAdminProfile = asyncFunctionHandler(async (req, res) => {
   const { fullName, email, password, username } = req?.body;
   const { userId } = req?.params;
@@ -210,6 +211,7 @@ export const updateAdminProfile = asyncFunctionHandler(async (req, res) => {
     .json(new apiResponse(200, "Admin updated successfully", admin));
 });
 
+//delete admin
 export const deleteAdmin = asyncFunctionHandler(async (req, res) => {
   const { userId } = req?.params;
   const role = req?.role;
@@ -244,6 +246,7 @@ export const deleteAdmin = asyncFunctionHandler(async (req, res) => {
     .json(new apiResponse(200, "Admin deleted successfully"));
 });
 
+//controller for getting admin profile
 export const getAdminProfile = asyncFunctionHandler(async (req, res) => {
   const { userId } = req?.params;
   const loggedInAdminId = req?.user?._id;
@@ -419,7 +422,8 @@ export const getAllPermissionsByRole = asyncFunctionHandler(
   }
 );
 
-export const updateModeratorRoleByAdmin = asyncFunctionHandler(
+//only moderator role permissions will be updated by admin
+export const updateModeratorPermissionByAdmin = asyncFunctionHandler(
   async (req, res) => {
     const loggedInAdminId = req?.user?._id;
     const admin = await User.aggregate([
@@ -472,5 +476,87 @@ export const updateModeratorRoleByAdmin = asyncFunctionHandler(
       .json(
         new apiErrorHandler(401, "You don't have the permission to update role")
       );
+  }
+);
+
+//controller for promoting or demoting a person role with permissisons by admin
+export const promoteAndDemotePersonRoleByAdmin = asyncFunctionHandler(
+  async (req, res) => {
+    const { userId } = req?.params;
+    const loggedInAdminId = req?.user?._id;
+    const role = req?.role;
+    const { roleId } = req?.body; // the role to which the user is to be promoted or demoted
+    if (!loggedInAdminId)
+      return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+    if (!role)
+      return res
+        .status(401)
+        .json(
+          new apiErrorHandler(
+            401,
+            "You don't have the permission to promote a user"
+          )
+        );
+    if (!userId)
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "User id is required"));
+    const user = await User.findById(new mongoose.Types.ObjectId(userId));
+    if (!user)
+      return res.status(404).json(new apiErrorHandler(404, "User not found"));
+    const userRoleAggregation = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "role",
+          foreignField: "_id",
+          as: "role",
+        },
+      },
+    ]);
+    if (!userRoleAggregation)
+      return res
+        .status(500)
+        .json(
+          new apiErrorHandler(
+            500,
+            "User role not found in promoteAPersonRoleByAdmin"
+          )
+        );
+    const userRole = userRoleAggregation[0]?.role[0]?.name;
+    if (userRole === process.env.ADMIN_ROLE)
+      return res
+        .status(400)
+        .json(new apiErrorHandler(400, "Admin cannot be promoted or demoted"));
+
+    const RoleTobeUpdated = await Role.findById(
+      new mongoose.Types.ObjectId(roleId)
+    );
+    if (!RoleTobeUpdated)
+      return res.status(404).json(new apiErrorHandler(404, "Role not found"));
+    if (userRole === RoleTobeUpdated.name)
+      return res
+        .status(400)
+        .json(
+          new apiErrorHandler(
+            400,
+            "User is already in the same role. No need to update"
+          )
+        );
+    user.role = new mongoose.Types.ObjectId(roleId); //user role updated
+    user.permissions = RoleTobeUpdated.permissions; //user permissions updated
+    const userAfterSave = await user.save();
+    if (!userAfterSave)
+      return res
+        .status(500)
+        .json(
+          new apiErrorHandler(500, "User not updated for some unknown reason")
+        );
+    return res
+      .status(200)
+      .json(new apiResponse(200, "User role updated", user));
   }
 );

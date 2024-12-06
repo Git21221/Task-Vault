@@ -120,7 +120,6 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
                 },
               },
             ]);
-            // console.log("adminPermissions", adminPermissions[0]);
             //check for permissions
             let flag = true;
             adminPermissions[0]?.userPermissions?.forEach((permission) => {
@@ -129,7 +128,6 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
                   if (permission[decodedActionType].includes(decodedAction)) {
                     req.role = userWithRole[0];
                     flag = false;
-                    console.log(permission[decodedActionType]);
                   } else {
                     req.role = null;
                   }
