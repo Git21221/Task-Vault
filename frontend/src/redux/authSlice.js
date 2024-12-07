@@ -6,25 +6,32 @@ const initialState = {
   loading: false,
   error: null,
   userRole: null,
+  isLoggedIn: false,
 };
 
-export const userSignin = createAsyncThunk("auth/userSignin", async (data, thunkAPI) => {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_DEV_SERVER_BASE_URL}/users/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(data),
-    });
-    const res = await response.json();
-    console.log(res);
-    return res;
-  } catch (error) {
-    return thunkAPI.rejectWithValue({ error: error.message });
+export const userSignin = createAsyncThunk(
+  "auth/userSignin",
+  async (data, thunkAPI) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_DEV_SERVER_BASE_URL}/users/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(data),
+        }
+      );
+      const res = await response.json();
+      console.log(res);
+      return res;
+    } catch (error) {
+      return thunkAPI.rejectWithValue({ error: error.message });
+    }
   }
-});
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -38,12 +45,15 @@ const authSlice = createSlice({
       state.loading = false;
       state.user = action.payload.data;
       state.userRole = action.payload.data.userRole[0].name;
+      action.payload.data.userRole[0]
+        ? (state.isLoggedIn = true)
+        : (state.isLoggedIn = false);
     });
     builder.addCase(userSignin.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload.error;
     });
-  }
+  },
 });
 
 export default authSlice;
