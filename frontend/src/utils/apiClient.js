@@ -9,6 +9,7 @@ export const apiClient = async (url, method, options) => {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...options.headers,
     },
   });
   const data = await response.json();
