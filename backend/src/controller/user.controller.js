@@ -153,13 +153,39 @@ export const loginUser = asyncFunctionHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
   );
-  const loggedInUser = await User.findById(user._id).select("-password -_id"); //remove password and refresh token from response
+  const loggedInUser = await User.findById(user._id).select("-password"); //remove password and refresh token from response
+  const aggregatedUser = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(loggedInUser._id) },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "userRole",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
   //send response
   return res
     .status(200)
     .cookie("accessToken", accessToken, accessTokenOptions)
     .cookie("refreshToken", refreshToken, refreshTokenOptions)
-    .json(new apiResponse(200, "User logged in successfully", loggedInUser));
+    .json(new apiResponse(200, "User logged in successfully", aggregatedUser[0], aggregatedUser[0].userRole[0].name));
 });
 
 //controller to update a user
@@ -290,7 +316,7 @@ export const getUserProfile = asyncFunctionHandler(async (req, res) => {
     return res.status(404).json(new apiErrorHandler(404, "User not found"));
   return res
     .status(200)
-    .json(new apiResponse(200, "User profile", userFullProfile));
+    .json(new apiResponse(200, "User profile", userFullProfile[0]));
 });
 
 export const getAllUsers = asyncFunctionHandler(async (req, res) => {
@@ -335,7 +361,12 @@ export const getAllUsers = asyncFunctionHandler(async (req, res) => {
         $expr: {
           $and: [
             { $gt: [{ $size: "$updatedRoles" }, 0] }, // Ensure updatedRoles[0] exists
-            { $eq: [{ $arrayElemAt: ["$updatedRoles.name", 0] }, "user"] },
+            {
+              $eq: [
+                { $arrayElemAt: ["$updatedRoles.name", 0] },
+                process.env.USER_ROLE,
+              ],
+            },
           ],
         },
       },
@@ -355,6 +386,9 @@ export const getAllUsers = asyncFunctionHandler(async (req, res) => {
   ) {
     return res.status(200).json(new apiResponse(200, "All Users", users));
   }
-  return res.status(401).json(new apiErrorHandler(401, "You don't have permission to get all users"));
+  return res
+    .status(401)
+    .json(
+      new apiErrorHandler(401, "You don't have permission to get all users")
+    );
 });
-
