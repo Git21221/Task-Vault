@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { apiClient } from "../utils/apiClient";
 
 const initialState = {
   user: null,
@@ -13,20 +14,10 @@ export const userSignin = createAsyncThunk(
   "auth/userSignin",
   async (data, thunkAPI) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_DEV_SERVER_BASE_URL}/users/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(data),
-        }
-      );
-      const res = await response.json();
-      console.log(res);
-      return res;
+      const result = await apiClient("users/login", "POST", {
+        body: JSON.stringify(data),
+      });
+      return result;
     } catch (error) {
       return thunkAPI.rejectWithValue({ error: error.message });
     }
