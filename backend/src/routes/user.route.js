@@ -6,6 +6,7 @@ import {
   loginUser,
   registerUser,
   updateUserProfile,
+  validateAccessToken,
 } from "../controller/user.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import { verifyRoleAndPermission } from "../middleware/role.middleware.js";

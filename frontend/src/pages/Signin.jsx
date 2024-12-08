@@ -19,7 +19,7 @@ function Signin() {
         setSuccessMessage(res.payload.message);
         setErrorMessage("");
       }
-      navigate("/users/1");
+      navigate("/");
     });
   };
 

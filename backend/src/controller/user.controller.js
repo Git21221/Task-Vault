@@ -9,6 +9,7 @@ import {
   accessTokenOptions,
   refreshTokenOptions,
 } from "../utils/refreshAccessToken.util.js";
+import jwt from "jsonwebtoken";
 
 //controller for registering a user
 export const registerUser = asyncFunctionHandler(async (req, res) => {
@@ -185,7 +186,14 @@ export const loginUser = asyncFunctionHandler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, accessTokenOptions)
     .cookie("refreshToken", refreshToken, refreshTokenOptions)
-    .json(new apiResponse(200, "User logged in successfully", aggregatedUser[0], aggregatedUser[0].userRole[0].name));
+    .json(
+      new apiResponse(
+        200,
+        "User logged in successfully",
+        aggregatedUser[0],
+        aggregatedUser[0].userRole[0].name
+      )
+    );
 });
 
 //controller to update a user
@@ -316,7 +324,7 @@ export const getUserProfile = asyncFunctionHandler(async (req, res) => {
     return res.status(404).json(new apiErrorHandler(404, "User not found"));
   return res
     .status(200)
-    .json(new apiResponse(200, "User profile", userFullProfile[0]));
+    .json(new apiResponse(200, "User profile", userFullProfile[0], userFullProfile[0].userRole[0].name));
 });
 
 export const getAllUsers = asyncFunctionHandler(async (req, res) => {
@@ -390,5 +398,54 @@ export const getAllUsers = asyncFunctionHandler(async (req, res) => {
     .status(401)
     .json(
       new apiErrorHandler(401, "You don't have permission to get all users")
+    );
+});
+
+export const validateAccessToken = asyncFunctionHandler(async (req, res) => {
+  const accessToken = req?.cookies?.accessToken;
+  console.log(accessToken);
+  if (!accessToken)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  const userId = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+  console.log(userId);
+
+  const user = await User.findById(new mongoose.Types.ObjectId(userId._id));
+  if (!user)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  const aggregatedUser = await User.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(user._id) },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "userRole",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        "Valid Access Token",
+        user,
+        aggregatedUser[0].userRole[0].name
+      )
     );
 });
