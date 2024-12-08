@@ -5,7 +5,7 @@ import AddTask from "../../components/AddTask";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllTasks } from "../../redux/taskSlice";
 import TaskByCategory from "../../components/TaskByCategory";
-import TaskModal from "../../components/taskModal";
+import TaskModal from "../../components/TaskModal";
 
 function UserDashboard() {
   const { tasks, openTaskModal } = useSelector((state) => state.task);
