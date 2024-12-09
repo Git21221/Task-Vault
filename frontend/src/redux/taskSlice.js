@@ -3,6 +3,10 @@ import { apiClient } from "../utils/apiClient";
 
 const initialState = {
   tasks: [],
+  personTasksOfId: [],
+  userTasks: [],
+  modTasks: [],
+  adminTasks: [],
   openTaskModal: {
     open: false,
     task: {},
@@ -29,7 +33,7 @@ export const createTask = createAsyncThunk(
 export const updateTask = createAsyncThunk(
   "task/update-task",
   async (
-    { taskId, title, description, userId, action },
+    { taskId, title, description, status, userId, action },
     { rejectWithValue }
   ) => {
     try {
@@ -37,7 +41,7 @@ export const updateTask = createAsyncThunk(
         `tasks/update-task/${taskId}/${userId}/${action}`,
         "PUT",
         {
-          body: JSON.stringify({ title, description }),
+          body: JSON.stringify({ title, description, status }),
         }
       );
       return result;
@@ -70,6 +74,36 @@ export const getAllTasks = createAsyncThunk("task/get-all-tasks", async () => {
     return rejectWithValue(error.message);
   }
 });
+
+export const deleteTask = createAsyncThunk(
+  "task/delete-task",
+  async ({ taskId, userId, action }, { rejectWithValue }) => {
+    try {
+      const result = apiClient(
+        `tasks/delete-task/${taskId}/${userId}/${action}`,
+        "DELETE"
+      );
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getAllTasksOfUser = createAsyncThunk(
+  "task/get-all-tasks-of-user",
+  async ({ userId, action }, { rejectWithValue }) => {
+    try {
+      const result = apiClient(
+        `tasks/get-all-tasks-of-user/${userId}/${action}`,
+        "GET"
+      );
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const taskSlice = createSlice({
   name: "task",
@@ -110,6 +144,21 @@ const taskSlice = createSlice({
       .addCase(getAllTasks.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = action.payload.data;
+        console.log(action.payload.data);
+        console.log(
+          action.payload.data.filter(
+            (task) => task.owner.role.name === import.meta.env.VITE_ADMIN_ROLE
+          )
+        );
+        state.userTasks = action.payload.data.filter(
+          (task) => task.owner.role.name === import.meta.env.VITE_USER_ROLE
+        );
+        state.modTasks = action.payload.data.filter(
+          (task) => task.owner.role.name === import.meta.env.VITE_MOD_ROLE
+        );
+        state.adminTasks = action.payload.data.filter(
+          (task) => task.owner.role.name === import.meta.env.VITE_ADMIN_ROLE
+        );
       })
       .addCase(getAllTasks.rejected, (state) => {
         state.loading = false;
@@ -127,6 +176,7 @@ const taskSlice = createSlice({
               ...task,
               title: action.payload.data.title || "",
               description: action.payload.data.description || "",
+              status: action.payload.data.status || "",
             };
           }
           return task;
@@ -135,6 +185,27 @@ const taskSlice = createSlice({
       .addCase(updateTask.rejected, (state) => {
         state.loading = false;
         state.error = "Error updating task";
+      })
+      .addCase(deleteTask.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.personTasksOfId = state.personTasksOfId.filter(
+          (task) => task._id !== action.payload.data._id
+        );
+      })
+      .addCase(deleteTask.rejected, (state) => {
+        state.loading = false;
+        state.error = "Error deleting task";
+      }).addCase(getAllTasksOfUser.pending, (state) => {
+        state.loading = true;
+      }).addCase(getAllTasksOfUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.personTasksOfId = action.payload.data;
+      }).addCase(getAllTasksOfUser.rejected, (state) => {
+        state.loading = false;
+        state.error = "Error fetching tasks";
       });
   },
 });

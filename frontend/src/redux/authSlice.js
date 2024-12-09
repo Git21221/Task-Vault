@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { apiClient } from "../utils/apiClient";
+import Cookies from "js-cookie";
 
 const initialState = {
   user: null,
@@ -12,9 +13,23 @@ const initialState = {
 
 export const userSignin = createAsyncThunk(
   "auth/userSignin",
-  async (data, rejectWithValue) => {
+  async (data, { rejectWithValue }) => {
     try {
       const result = apiClient("users/login", "POST", {
+        body: JSON.stringify(data),
+      });
+      return result;
+    } catch (error) {
+      return rejectWithValue({ error: error.message });
+    }
+  }
+);
+
+export const userSignup = createAsyncThunk(
+  "auth/userSignup",
+  async (data, { rejectWithValue }) => {
+    try {
+      const result = apiClient("users/signup", "POST", {
         body: JSON.stringify(data),
       });
       return result;
@@ -70,6 +85,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isLoggedIn = false;
       state.userRole = null;
+      Cookies.remove("accessToken");
     },
   },
   extraReducers: (builder) => {
@@ -78,17 +94,32 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(userSignin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.data;
-        state.userRole = action.payload.role;
-        action.payload.data.userRole[0]
-          ? (state.isLoggedIn = true)
-          : (state.isLoggedIn = false);
+        if (action.payload.code < 300) {
+          state.loading = false;
+          state.user = action.payload.data;
+          state.userRole = action.payload.role;
+          action.payload.data.userRole[0]
+            ? (state.isLoggedIn = true)
+            : (state.isLoggedIn = false);
+        } else {
+          state.loading = false;
+          state.isLoggedIn = false;
+          state.error = action.payload.message;
+        }
       })
       .addCase(userSignin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload.error;
         state.isLoggedIn = false;
+      })
+      .addCase(userSignup.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(userSignup.fulfilled, (state, action) => {
+        if (action.payload.code > 300) {
+          state.loading = false;
+          state.error = action.payload.message;
+        }
       })
       .addCase(getCurrentPerson.pending, (state) => {
         state.loading = true;

@@ -1,15 +1,25 @@
 import React, { useEffect } from "react";
-import { setOpenTaskModal } from "../redux/taskSlice";
-import { useDispatch } from "react-redux";
+import { deleteTask, setOpenTaskModal } from "../redux/taskSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { CgMoreVerticalAlt } from "react-icons/cg";
 
 function TaskByCategory({
   taskName,
   tasks,
+  userTasks,
+  modTasks,
+  adminTasks,
   status,
   openMoreModal,
   setOpenMoreModal,
 }) {
+  // console.log(userTasks);
+  // console.log(modTasks);
+  
+  // const adminTasks = useSelector((state) => state.task.adminTasks);
+  console.log(adminTasks);
+  
+  
   const dispatch = useDispatch();
   const handleMoreRef = React.useRef(null);
   const [moreOptions, setMoreOptions] = React.useState({
@@ -31,17 +41,17 @@ function TaskByCategory({
 
   return (
     <div
-    key={status}
-    className={`${
-      taskName === "created"
-      ? "bg-blue-100"
-      : taskName === "in-progress"
-      ? "bg-yellow-100"
-      : "bg-green-100"
-    } rounded-lg shadow p-4`}
+      key={status}
+      className={`${
+        taskName === "created"
+          ? "bg-blue-100"
+          : taskName === "in-progress"
+          ? "bg-yellow-100"
+          : "bg-green-100"
+      } rounded-lg shadow p-4`}
     >
       <h3
-          ref={handleMoreRef}
+        ref={handleMoreRef}
         className={`text-lg font-semibold mb-4 ${
           taskName === "created"
             ? "text-blue-800"
@@ -54,7 +64,7 @@ function TaskByCategory({
       </h3>
       {/* Add tasks dynamically */}
       <ul className="space-y-2 relative">
-        {tasks.map((task, idx) => (
+        {tasks?.map((task, idx) => (
           <React.Fragment key={idx}>
             <li
               key={idx}
@@ -86,7 +96,8 @@ function TaskByCategory({
               ) : null}
             </li>
             {openMoreModal.open && openMoreModal.task._id === task._id && (
-              <div className="absolute right mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-10">
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-10">
+                {console.log(task)}
                 <ul className="py-2">
                   <li
                     onMouseDown={(e) => {
@@ -100,7 +111,16 @@ function TaskByCategory({
                     Edit Task
                   </li>
                   <li
-                    // onClick={handleDelete}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dispatch(
+                        deleteTask({
+                          taskId: task._id,
+                          userId: task.owner._id,
+                          action: import.meta.env.VITE_TASK_DELETE,
+                        })
+                      );
+                    }}
                     className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     Delete Task

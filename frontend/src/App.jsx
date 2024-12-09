@@ -14,6 +14,13 @@ import UserLayout from "./pages/user/UserLayout";
 import WrongRoleRoute from "./pages/WrongRoleRoute";
 import Validate from "./pages/Validate";
 import Home from "./pages/Home";
+import UserManagementByAdmin from "./pages/admin/UserManagementByAdmin";
+import ModeratorManagementByAdmin from "./pages/admin/ModeratorManagementByAdmin";
+import SettingsAdmin from "./pages/admin/SettingsAdmin";
+import ManagePermissions from "./pages/admin/ManagePermissions";
+import GetSingleUser from "./pages/admin/GetSingleUser";
+import GetSingleMod from "./pages/admin/GetSingleMod";
+import Signup from "./pages/Signup";
 
 function App() {
   const { isLoggedIn, userRole } = useSelector((state) => state.auth);
@@ -28,8 +35,8 @@ function App() {
             element={!isLoggedIn ? <Signin /> : <Navigate to={"/"} replace />}
           />
           <Route
-            path="/register"
-            element={!isLoggedIn ? <Signin /> : <Navigate to={"/"} replace />}
+            path="/signup"
+            element={!isLoggedIn ? <Signup /> : <Navigate to={"/"} replace />}
           />
 
           {/* authorised */}
@@ -39,22 +46,85 @@ function App() {
             <Route
               path="/admin"
               element={
-                userRole === import.meta.env.VITE_ADMIN_ROLE && isLoggedIn ? (
+                (userRole === import.meta.env.VITE_ADMIN_ROLE && isLoggedIn) ? (
                   <AdminLayout />
                 ) : (
                   <Navigate to={"/wrong-role-route"} replace />
                 )
               }
             >
-              <Route path="admin-dashboard" element={<AdminDashboard />} />
+              <Route
+                path="admin-dashboard"
+                element={
+                  isLoggedIn ? (
+                    <AdminDashboard />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
+              <Route
+                path="user-management"
+                element={
+                  isLoggedIn ? (
+                    <UserManagementByAdmin />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
+              <Route
+                path="user-management/user/:id"
+                element={
+                  isLoggedIn ? (
+                    <GetSingleUser />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
+              <Route
+                path="mod-management"
+                element={
+                  isLoggedIn ? (
+                    <ModeratorManagementByAdmin />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
+              <Route
+                path="mod-management/mod/:id"
+                element={isLoggedIn ? <GetSingleMod /> : <Navigate to="/signin" replace />}
+              />
+              <Route
+                path="permissions"
+                element={
+                  isLoggedIn ? (
+                    <ManagePermissions />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  isLoggedIn ? (
+                    <SettingsAdmin />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
             </Route>
 
             {/* moderator routes */}
             <Route
               path="/moderator"
               element={
-                userRole === import.meta.env.VITE_MODERATOR_ROLE &&
-                isLoggedIn ? (
+                (userRole === import.meta.env.VITE_MOD_ROLE &&
+                isLoggedIn) ? (
                   <ModeratorLayout />
                 ) : (
                   <Navigate to={"/wrong-role-route"} replace />
@@ -81,7 +151,11 @@ function App() {
               <Route
                 path="user-dashboard"
                 element={
-                  isLoggedIn ? <UserDashboard /> : <Navigate to={"/signin"} />
+                  isLoggedIn ? (
+                    <UserDashboard />
+                  ) : (
+                    <Navigate to={"/signin"} replace />
+                  )
                 }
               />
             </Route>

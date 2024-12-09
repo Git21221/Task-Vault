@@ -2,11 +2,13 @@ import React, { useEffect, useRef } from "react";
 import { IoMdRefresh } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/authSlice";
 
 function Navbar() {
   const { user, userRole } = useSelector((state) => state.auth);
   const [openProfileModal, setOpenProfileModal] = React.useState(false);
+  const dispatch = useDispatch();
   const modalRef = useRef(null);
 
   const handleProfileClick = () => {
@@ -14,7 +16,7 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-    // Add your logout logic here
+    dispatch(logout());
   };
 
   // Close modal when clicking outside
@@ -90,7 +92,7 @@ function Navbar() {
           onClick={handleProfileClick}
           className="w-8 h-8 select-none bg-gray-400 rounded-full flex items-center justify-center text-white text-xl cursor-pointer"
         >
-          {user?.fullName?.charAt(0)}
+          {user?.fullName?.charAt(0).toUpperCase()}
         </div>
       </div>
     </div>

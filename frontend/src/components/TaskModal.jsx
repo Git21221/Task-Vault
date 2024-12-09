@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setOpenTaskModal, updateTask } from "../redux/taskSlice";
 import { Button, FormWrapper } from "form-snippet";
+import { allStatus } from "../utils/constant";
 
 function TaskModal({ openTaskModal }) {
-  console.log(openTaskModal);
   const [task, setTask] = useState(openTaskModal?.title || "");
+  const [status, setStatus] = useState(openTaskModal?.status || "");
   const [description, setDescription] = useState(
     openTaskModal?.description || ""
   );
@@ -13,13 +14,16 @@ function TaskModal({ openTaskModal }) {
   const dispatch = useDispatch();
   useEffect(() => {
     const handleOutsideClick = (e) => {
+      console.log(openTaskModal);
       if (taskRef.current && !taskRef.current.contains(e.target)) {
-        task
+        task !== openTaskModal?.title ||
+        status !== openTaskModal?.status ||
+        description !== openTaskModal?.description
           ? dispatch(
               updateTask({
                 title: task,
                 description: description || "",
-                status: openTaskModal?.status,
+                status: status,
                 taskId: openTaskModal?._id,
                 userId: openTaskModal?.owner?._id,
                 action: import.meta.env.VITE_TASK_UPDATE,
@@ -34,7 +38,7 @@ function TaskModal({ openTaskModal }) {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, [task, description, dispatch, openTaskModal]);
+  }, [task, description, status, dispatch, openTaskModal]);
 
   const handleTaskAdd = (e) => {
     e.preventDefault();
@@ -43,7 +47,7 @@ function TaskModal({ openTaskModal }) {
           updateTask({
             title: task,
             description: description || "",
-            status: openTaskModal?.status,
+            status: status,
             taskId: openTaskModal?._id,
             userId: openTaskModal?.owner?._id,
             action: import.meta.env.VITE_TASK_UPDATE,
@@ -52,7 +56,7 @@ function TaskModal({ openTaskModal }) {
       : null;
     setDescription("");
     setTask("");
-    dispatch(setOpenTaskModal({open: false, task: {}}));
+    dispatch(setOpenTaskModal({ open: false, task: {} }));
   };
 
   const handleTask = (e) => {
@@ -60,6 +64,9 @@ function TaskModal({ openTaskModal }) {
   };
   const handleDescription = (e) => {
     setDescription(e.target.value);
+  };
+  const handleStatusChange = (e) => {
+    setStatus(e.target.value);
   };
   return (
     <div className="fixed z-10 inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
@@ -92,7 +99,21 @@ function TaskModal({ openTaskModal }) {
               </p>
             </div>
             <div className="flex justify-between w-full text-xs items-end">
-              <p>{openTaskModal.status}</p>
+              <div className="relative">
+                <select
+                  id="statusDropdown"
+                  value={status}
+                  onChange={handleStatusChange}
+                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  {allStatus.map((status, index) => (
+                    <option key={index} value={status}>
+                      {status}
+                      {/* Capitalize status */}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Button onClick={handleTaskAdd} variant="outlined">
                 Save
               </Button>

@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet } from 'react-router-dom'
+import { getCurrentPerson } from '../../redux/authSlice';
+import Navbar from '../../components/Navbar';
+import Sidebar from '../../components/Sidebar';
 
 function ModeratorLayout() {
   const { user } = useSelector((state) => state.auth);
@@ -15,7 +18,15 @@ function ModeratorLayout() {
     );
   }, [dispatch]);
   return (
-    <Outlet />
+    <div className="h-screen flex flex-col">
+    <Navbar />
+    <div className="flex flex-1">
+      <Sidebar />
+      <div className="flex-1 p-4 w-full h-[calc(100vh-62px)] overflow-y-auto">
+        <Outlet />
+      </div>
+    </div>
+  </div>
   )
 }
 

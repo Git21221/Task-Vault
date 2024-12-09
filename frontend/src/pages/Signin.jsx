@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormWrapper, Input, Button } from "form-snippet";
 import { useDispatch } from "react-redux";
 import { userSignin } from "../redux/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Signin() {
   const dispatch = useDispatch();
@@ -12,14 +12,15 @@ function Signin() {
 
   const handleFormSubmit = (data) => {
     dispatch(userSignin(data)).then((res) => {
+      console.log(res);
       if (res.payload.code > 300) {
         setErrorMessage(res.payload.message);
         setSuccessMessage("");
       } else {
         setSuccessMessage(res.payload.message);
         setErrorMessage("");
+        navigate("/");
       }
-      navigate("/");
     });
   };
 
@@ -57,13 +58,8 @@ function Signin() {
           <Button variant="text" className="w-full">
             Forgot password?
           </Button>
-          <div className="flex justify-between items-center w-full">
-            <Button variant="outlined" className="">
-              Admin
-            </Button>
-            <Button variant="outlined" className="">
-              Moderator
-            </Button>
+          <div className="flex justify-center gap-2 items-center w-full">
+            Not a member?{" "} <Link to="/signup" className="text-[#1565C0]">Sign up</Link>
           </div>
         </div>
       </div>

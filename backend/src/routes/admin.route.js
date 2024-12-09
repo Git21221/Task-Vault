@@ -3,6 +3,7 @@ import {
   deleteAdmin,
   getAdminProfile,
   getAllPermissionsByRole,
+  getAllRoles,
   loginAdmin,
   promoteAndDemotePersonRoleByAdmin,
   registerAdmin,
@@ -14,7 +15,7 @@ import { verifyRoleAndPermission } from "../middleware/role.middleware.js";
 
 const adminRouter = Router();
 
-adminRouter.post("/register", registerAdmin);
+adminRouter.post("/signup", registerAdmin);
 adminRouter.post("/login", loginAdmin);
 adminRouter.put(
   "/update-profile-admin/:userId/:actionType",
@@ -48,4 +49,5 @@ adminRouter.patch(
   verifyRoleAndPermission,
   promoteAndDemotePersonRoleByAdmin
 );
+adminRouter.get("/get-all-roles", verifyJWT, getAllRoles);
 export { adminRouter };

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Task } from "../models/task.model.js";
 import { User } from "../models/user.model.js";
 import { apiErrorHandler } from "../utils/apiErrorHandler.util.js";
@@ -157,7 +158,17 @@ export const getAllTasksOfPerson = asyncFunctionHandler(async (req, res) => {
                   as: "role",
                 },
               },
+              {
+                $addFields: {
+                  role: { $arrayElemAt: ["$role", 0] },
+                }
+              }
             ],
+          },
+        },
+        {
+          $addFields: {
+            owner: { $arrayElemAt: ["$owner", 0] },
           },
         },
       ]);
@@ -257,4 +268,46 @@ export const getAllTasksOfPerson = asyncFunctionHandler(async (req, res) => {
   return res
     .status(500)
     .json(new apiErrorHandler(500, "Issue in fetching tasks"));
+});
+
+export const getTasksOfUser = asyncFunctionHandler(async (req, res) => {
+  const userId = req?.params?.userId;
+  const loggedInPersonId = req?.user._id;
+  const role = req?.role;
+  if (!loggedInPersonId)
+    return res.status(400).json(new apiErrorHandler(400, "Unauthorized"));
+  if (!role)
+    return res
+      .status(400)
+      .json(
+        new apiErrorHandler(400, "You don't have a permission to read tasks")
+      );
+
+  const person = await Task.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(userId),
+      }
+    },
+    // {
+    //   $lookup: {
+    //     from: "users",
+    //     localField: "owner",
+    //     foreignField: "_id",
+    //     as: "owner",
+    //     pipeline: [
+    //       {
+    //         $project: {
+    //           password: 0,
+    //         },
+    //       },
+    //     ],
+    //   },
+    // },
+  ]);
+  if (!person)
+    return res.status(404).json(new apiErrorHandler(404, "Person not found"));
+  return res
+    .status(200)
+    .json(new apiResponse(200, "Tasks found", person));
 });

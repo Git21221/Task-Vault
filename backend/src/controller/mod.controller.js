@@ -235,11 +235,11 @@ export const deleteMod = asyncFunctionHandler(async (req, res) => {
       .status(404)
       .json(new apiErrorHandler(404, "Moderator not found"));
   const modAfterDelete = await mod.deleteOne();
-  if (!modAfterDelete)
+  if (!modAfterDelete.acknowledged || modAfterDelete.deletedCount !== 1)
     return res
       .status(500)
       .json(new apiErrorHandler(500, "Issue in deleting moderator"));
-  return res.status(200).json(new apiResponse(200, "Moderator deleted"));
+  return res.status(200).json(new apiResponse(200, "Moderator deleted", mod));
 });
 
 export const getModProfile = asyncFunctionHandler(async (req, res) => {
@@ -292,4 +292,77 @@ export const getModProfile = asyncFunctionHandler(async (req, res) => {
   return res
     .status(200)
     .json(new apiResponse(200, "Moderator profile", modFullProfile));
+});
+
+export const getAllMods = asyncFunctionHandler(async (req, res) => {
+  const loggedInUserId = req?.user?._id;
+  if (!loggedInUserId)
+    return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
+  const roleOfLoggedInUser = await User.aggregate([
+    {
+      $match: {
+        _id: loggedInUserId,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+  ]);
+
+  const users = await User.aggregate([
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "updatedRoles",
+      },
+    },
+    {
+      $lookup: {
+        from: "permissions",
+        localField: "permissions",
+        foreignField: "_id",
+        as: "permissions",
+      },
+    },
+    {
+      $match: {
+        $expr: {
+          $and: [
+            { $gt: [{ $size: "$updatedRoles" }, 0] }, // Ensure updatedRoles[0] exists
+            {
+              $eq: [
+                { $arrayElemAt: ["$updatedRoles.name", 0] },
+                process.env.MODERATOR_ROLE,
+              ],
+            },
+          ],
+        },
+      },
+    },
+    {
+      $project: {
+        password: 0,
+      },
+    },
+  ]);
+  if (!users)
+    return res
+      .status(404)
+      .json(new apiErrorHandler(404, "Moderator not found"));
+  const roleName = roleOfLoggedInUser[0]?.role[0]?.name;
+  if (roleName === process.env.ADMIN_ROLE) {
+    return res.status(200).json(new apiResponse(200, "All Moderators", users));
+  }
+  return res
+    .status(401)
+    .json(
+      new apiErrorHandler(401, "You don't have permission to get all mods")
+    );
 });

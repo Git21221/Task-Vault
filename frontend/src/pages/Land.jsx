@@ -2,8 +2,6 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { getCurrentPerson } from "../redux/authSlice";
-import Navbar from "../components/user/Navbar";
-import Sidebar from "../components/user/Sidebar";
 
 function Land() {
   const { user, userRole } = useSelector((state) => state.auth);

@@ -13,7 +13,7 @@ import { verifyRoleAndPermission } from "../middleware/role.middleware.js";
 
 export const userRouter = Router();
 
-userRouter.post("/register", registerUser);
+userRouter.post("/signup", registerUser);
 userRouter.post("/login", loginUser);
 userRouter.put(
   "/update-profile/:userId/:actionType",
@@ -21,7 +21,12 @@ userRouter.put(
   verifyRoleAndPermission,
   updateUserProfile
 );
-userRouter.delete("/delete-user/:userId/:actionType", deleteUser);
+userRouter.delete(
+  "/delete-user/:userId/:actionType",
+  verifyJWT,
+  verifyRoleAndPermission,
+  deleteUser
+);
 userRouter.get(
   "/get-user-profile/:userId/:actionType",
   verifyJWT,

@@ -552,3 +552,38 @@ export const promoteAndDemotePersonRoleByAdmin = asyncFunctionHandler(
       .json(new apiResponse(200, "User role updated", user));
   }
 );
+
+export const getAllRoles = asyncFunctionHandler(async (req, res) => {
+  const loggedInAdminId = req?.user?._id;
+  const admin = await User.aggregate([
+    {
+      $match: {
+        _id: loggedInAdminId,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+  ]);
+  const roleName = admin[0]?.role[0]?.name;
+  if (roleName === process.env.ADMIN_ROLE) {
+    const allRoles = await Role.find({});
+    if (!allRoles)
+      return res
+        .status(500)
+        .json(new apiErrorHandler(500, "Roles not found for some unknown reason"));
+    return res
+      .status(200)
+      .json(new apiResponse(200, "Roles found", allRoles));
+  }
+  return res
+    .status(401)
+    .json(
+      new apiErrorHandler(401, "You don't have the permission to get all roles")
+    );
+});

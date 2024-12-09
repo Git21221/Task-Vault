@@ -262,7 +262,7 @@ export const deleteUser = asyncFunctionHandler(async (req, res) => {
   if (!user)
     return res.status(404).json(new apiErrorHandler(404, "User not found"));
   const deletedUser = await user.deleteOne();
-  if (!deletedUser)
+  if (!deletedUser.acknowledged || deletedUser.deletedCount === 0)
     return res
       .status(500)
       .json(
