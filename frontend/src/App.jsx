@@ -27,8 +27,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* <Route path="/home" element={<Home />} /> */}
         <Route path="/" element={<Validate />}>
+        {/* <Route path="/" element={!isLoggedIn ? <Home /> : <Navigate to="/" />} /> */}
           {/* not authorised */}
           <Route
             path="/signin"
