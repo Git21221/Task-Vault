@@ -32,8 +32,8 @@ function App() {
       localStorage.setItem("lastRoute", location.pathname);
     }
   }, [location.pathname, isLoggedIn]);
-  const lastRoute = localStorage.getItem("lastRoute");
-  console.log(lastRoute);
+  const lastRoute = localStorage.getItem("lastRoute") || "/";
+  
   return (
     <div>
       <Loader />
@@ -48,7 +48,7 @@ function App() {
               !isLoggedIn ? (
                 <Signin />
               ) : (
-                <Navigate to={lastRoute || ""} replace />
+                <Navigate to={lastRoute || "/"} replace />
               )
             }
           />

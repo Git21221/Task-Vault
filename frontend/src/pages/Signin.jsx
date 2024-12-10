@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FormWrapper, Input, Button } from "form-snippet";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { userSignin } from "../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -9,6 +9,7 @@ function Signin() {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const loading = useSelector((state) => state.ui.loading);
 
   const handleFormSubmit = (data) => {
     dispatch(userSignin({dispatch,data})).then((res) => {
@@ -23,7 +24,7 @@ function Signin() {
       }
     });
   };
-
+if(loading) return null;
   return (
     <FormWrapper onSubmit={handleFormSubmit}>
       <div className="flex items-center h-screen">
