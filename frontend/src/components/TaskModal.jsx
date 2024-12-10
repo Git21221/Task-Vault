@@ -21,6 +21,7 @@ function TaskModal({ openTaskModal }) {
         description !== openTaskModal?.description
           ? dispatch(
               updateTask({
+                dispatch,
                 title: task,
                 description: description || "",
                 status: status,
@@ -45,6 +46,7 @@ function TaskModal({ openTaskModal }) {
     task
       ? dispatch(
           updateTask({
+            dispatch,
             title: task,
             description: description || "",
             status: status,

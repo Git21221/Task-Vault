@@ -11,7 +11,7 @@ function Signin() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleFormSubmit = (data) => {
-    dispatch(userSignin(data)).then((res) => {
+    dispatch(userSignin({dispatch,data})).then((res) => {
       console.log(res);
       if (res.payload.code > 300) {
         setErrorMessage(res.payload.message);

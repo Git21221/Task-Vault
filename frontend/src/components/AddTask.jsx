@@ -12,7 +12,7 @@ function AddTask() {
   const handleTaskAdd = (e) => {
     e.preventDefault();
     task
-      ? dispatch(createTask({ title: task, description: description || "" }))
+      ? dispatch(createTask({ dispatch,title: task, description: description || "" }))
       : null;
     setTaskCrete(false);
     setDescription("");
@@ -27,7 +27,7 @@ function AddTask() {
         //save task to backend
         task
           ? dispatch(
-              createTask({ title: task, description: description || "" })
+              createTask({ dispatch,title: task, description: description || "" })
             )
           : null;
         setTaskCrete(false);

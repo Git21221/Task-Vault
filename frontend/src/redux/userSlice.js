@@ -10,9 +10,9 @@ const initialState = {
 
 export const getAllUsers = createAsyncThunk(
   "user/getAllUsers",
-  async (_, { rejectWithValue }) => {
+  async ({ dispatch }, { rejectWithValue }) => {
     try {
-      const result = await apiClient("users/get-all-users", "GET");
+      const result = await apiClient(dispatch, "users/get-all-users", "GET");
       return result;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -22,9 +22,10 @@ export const getAllUsers = createAsyncThunk(
 
 export const deleteUser = createAsyncThunk(
   "user/deleteUser",
-  async ({ userId, action }, { rejectWithValue }) => {
+  async ({ dispatch, userId, action }, { rejectWithValue }) => {
     try {
       const result = await apiClient(
+        dispatch,
         `users/delete-user/${userId}/${action}`,
         "DELETE"
       );

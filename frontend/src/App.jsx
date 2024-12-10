@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import "./App.css";
 import Signin from "./pages/Signin";
 import Land from "./pages/Land";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useSelector } from "react-redux";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -21,18 +21,36 @@ import ManagePermissions from "./pages/admin/ManagePermissions";
 import GetSingleUser from "./pages/admin/GetSingleUser";
 import GetSingleMod from "./pages/admin/GetSingleMod";
 import Signup from "./pages/Signup";
+import Loader from "./components/Loader";
+import { useEffect } from "react";
 
 function App() {
   const { isLoggedIn, userRole } = useSelector((state) => state.auth);
+  const location = useLocation();
+  useEffect(() => {
+    if (isLoggedIn) {
+      localStorage.setItem("lastRoute", location.pathname);
+    }
+  }, [location.pathname, isLoggedIn]);
+  const lastRoute = localStorage.getItem("lastRoute");
+  console.log(lastRoute);
   return (
-    <Router>
+    <div>
+      <Loader />
       <Routes>
+        <Route path="/" element={<Land />} />
         <Route path="/" element={<Validate />}>
-        {/* <Route path="/" element={!isLoggedIn ? <Home /> : <Navigate to="/" />} /> */}
+          {/* <Route path="/" element={!isLoggedIn ? <Home /> : <Navigate to="/" />} /> */}
           {/* not authorised */}
           <Route
             path="/signin"
-            element={!isLoggedIn ? <Signin /> : <Navigate to={"/"} replace />}
+            element={
+              !isLoggedIn ? (
+                <Signin />
+              ) : (
+                <Navigate to={lastRoute || ""} replace />
+              )
+            }
           />
           <Route
             path="/signup"
@@ -41,12 +59,11 @@ function App() {
 
           {/* authorised */}
           <Route element={<ProtectedRoute isLoggedIn={isLoggedIn} />}>
-            <Route path="/" element={<Land />} />
             {/* admin routes */}
             <Route
               path="/admin"
               element={
-                (userRole === import.meta.env.VITE_ADMIN_ROLE && isLoggedIn) ? (
+                userRole === import.meta.env.VITE_ADMIN_ROLE && isLoggedIn ? (
                   <AdminLayout />
                 ) : (
                   <Navigate to={"/wrong-role-route"} replace />
@@ -95,7 +112,13 @@ function App() {
               />
               <Route
                 path="mod-management/mod/:id"
-                element={isLoggedIn ? <GetSingleMod /> : <Navigate to="/signin" replace />}
+                element={
+                  isLoggedIn ? (
+                    <GetSingleMod />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
               />
               <Route
                 path="permissions"
@@ -123,8 +146,7 @@ function App() {
             <Route
               path="/moderator"
               element={
-                (userRole === import.meta.env.VITE_MOD_ROLE &&
-                isLoggedIn) ? (
+                userRole === import.meta.env.VITE_MOD_ROLE && isLoggedIn ? (
                   <ModeratorLayout />
                 ) : (
                   <Navigate to={"/wrong-role-route"} replace />
@@ -163,7 +185,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
-    </Router>
+    </div>
   );
 }
 

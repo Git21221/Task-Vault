@@ -16,10 +16,10 @@ function Signup() {
     console.log(data);
     dispatch(
       data.role === import.meta.env.VITE_ADMIN_ROLE
-        ? adminSignup(data)
+        ? adminSignup({dispatch, data})
         : data.role === import.meta.env.VITE_MOD_ROLE
-        ? modSignup(data)
-        : userSignup(data)
+        ? modSignup({dispatch, data})
+        : userSignup({dispatch, data})
     ).then((res) => {
       if (res.payload.code > 300) {
         setErrorMessage(res.payload.message);

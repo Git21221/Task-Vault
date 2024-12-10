@@ -27,8 +27,8 @@ function ModeratorManagementByAdmin() {
   const [updatedRoles, setUpdatedRoles] = useState({}); // Track role changes for each mod
 
   useEffect(() => {
-    dispatch(getAllMods());
-    dispatch(getAllRoles());
+    dispatch(getAllMods({dispatch,}));
+    dispatch(getAllRoles({dispatch,}));
   }, [dispatch]);
 
   // Permissions mapping for human-readable values
@@ -64,6 +64,7 @@ function ModeratorManagementByAdmin() {
     if (updatedRoles[modId]) {
       dispatch(
         updateUserRole({
+          dispatch,
           userId: modId,
           roleId: updatedRoles[modId],
           action: import.meta.env.VITE_ROLE_UPDATE,
@@ -149,7 +150,6 @@ function ModeratorManagementByAdmin() {
               <TableCell>
                 {mod.permissions && mod.permissions.length > 0 ? (
                   mod.permissions.map((permission, idx) => {
-                    console.log(permission);
                     const permissionKey = Object.keys(permission)[1];
                     const permissionValue = permission[permissionKey];
                     const permissionLabel = `${permissionKey}:${permissionValue}`;

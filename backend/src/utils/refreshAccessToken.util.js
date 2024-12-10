@@ -41,7 +41,6 @@ const refreshAccessToken = async (req, res) => {
   );
   res.cookie("accessToken", accessToken, accessTokenOptions);
   res.cookie("refreshToken", refreshToken, refreshTokenOptions);
-  console.log("rat", accessToken, refreshToken);
   return { accessToken, refreshToken };
 };
 

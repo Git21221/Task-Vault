@@ -12,6 +12,7 @@ function ModeratorLayout() {
   useEffect(() => {
     dispatch(
       getCurrentPerson({
+        dispatch,
         userId: user._id,
         action: import.meta.env.VITE_PROFILE_READ,
       })

@@ -27,8 +27,8 @@ function UserManagement() {
   const [updatedRoles, setUpdatedRoles] = useState({}); // Track role changes for each user
 
   useEffect(() => {
-    dispatch(getAllRoles());
-    dispatch(getAllUsers());
+    dispatch(getAllRoles({dispatch,}));
+    dispatch(getAllUsers({dispatch,}));
   }, [dispatch]); // Fetch roles on component mount
 
   // Filtered users based on search and role
@@ -53,6 +53,7 @@ function UserManagement() {
     if (updatedRoles[userId]) {
       dispatch(
         updateUserRole({
+          dispatch,
           userId,
           roleId: updatedRoles[userId],
           action: import.meta.env.VITE_ROLE_UPDATE,
@@ -72,7 +73,7 @@ function UserManagement() {
   const handleDelete = (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       dispatch(
-        deleteUser({ userId, action: import.meta.env.VITE_PROFILE_DELETE })
+        deleteUser({ dispatch,userId, action: import.meta.env.VITE_PROFILE_DELETE })
       );
     }
   };

@@ -6,6 +6,7 @@ import taskSlice from "../redux/taskSlice";
 import userSlice from "../redux/userSlice";
 import modSlice from "../redux/modSlice";
 import adminSlice from "../redux/adminSlice";
+import uiSlice from "../redux/uiSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     user: userSlice.reducer,
     mod: modSlice.reducer,
     admin: adminSlice.reducer,
+    ui: uiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(logoutMiddleware, loginMiddleware),

@@ -10,13 +10,12 @@ function ModeratorDashboard() {
   const { tasks } = useSelector((state) => state.task);
   const { users } = useSelector((state) => state.user);
   const { mods } = useSelector((state) => state.mod);
-  console.log(mods);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllTasks());
-    dispatch(getAllUsers());
+    dispatch(getAllTasks({dispatch,}));
+    dispatch(getAllUsers({dispatch,}));
   }, [dispatch]);
 
   const stats = [

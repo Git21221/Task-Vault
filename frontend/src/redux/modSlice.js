@@ -11,9 +11,9 @@ const initialState = {
 
 export const getAllMods = createAsyncThunk(
   "mod/getAllMods",
-  async (_, { rejectWithValue }) => {
+  async ({ dispatch }, { rejectWithValue }) => {
     try {
-      const result = await apiClient("mod/get-all-mods", "GET");
+      const result = await apiClient(dispatch, "mod/get-all-mods", "GET");
       return result;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -23,9 +23,10 @@ export const getAllMods = createAsyncThunk(
 
 export const deleteMod = createAsyncThunk(
   "mod/deleteMod",
-  async ({ modId, action }, { rejectWithValue }) => {
+  async ({ dispatch, modId, action }, { rejectWithValue }) => {
     try {
       const result = await apiClient(
+        dispatch,
         `mod/delete-mod/${modId}/${action}`,
         "DELETE"
       );
@@ -37,9 +38,9 @@ export const deleteMod = createAsyncThunk(
 );
 export const modSignup = createAsyncThunk(
   "mod/modSignup",
-  async (data, { rejectWithValue }) => {
+  async ({ dispatch, data }, { rejectWithValue }) => {
     try {
-      const result = await apiClient("mod/signup", "POST", {
+      const result = await apiClient(dispatch, "mod/signup", "POST", {
         body: JSON.stringify(data),
       });
       return result;
@@ -51,9 +52,10 @@ export const modSignup = createAsyncThunk(
 
 export const getSingleMod = createAsyncThunk(
   "mod/getSingleMod",
-  async ({ modId, action }, { rejectWithValue }) => {
+  async ({ dispatch, modId, action }, { rejectWithValue }) => {
     try {
       const result = await apiClient(
+        dispatch,
         `mod/get-mod-profile/${modId}/${action}`,
         "GET"
       );

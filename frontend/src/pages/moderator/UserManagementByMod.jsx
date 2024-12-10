@@ -27,8 +27,8 @@ function UserManagementByMod() {
   const [updatedRoles, setUpdatedRoles] = useState({}); // Track role changes for each user
 
   useEffect(() => {
-    dispatch(getAllRoles());
-    dispatch(getAllUsers());
+    dispatch(getAllRoles({dispatch,}));
+    dispatch(getAllUsers({dispatch,}));
   }, [dispatch]); // Fetch roles on component mount
 
   // Filtered users based on search and role

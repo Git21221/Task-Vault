@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 function Validate() {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(verifyToken());
+    dispatch(verifyToken({dispatch,}));
   }, [dispatch]);
   return <Outlet />;
 }

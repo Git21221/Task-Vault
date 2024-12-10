@@ -403,11 +403,9 @@ export const getAllUsers = asyncFunctionHandler(async (req, res) => {
 
 export const validateAccessToken = asyncFunctionHandler(async (req, res) => {
   const accessToken = req?.cookies?.accessToken;
-  console.log(accessToken);
   if (!accessToken)
     return res.status(401).json(new apiErrorHandler(401, "Unauthorized"));
   const userId = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-  console.log(userId);
 
   const user = await User.findById(new mongoose.Types.ObjectId(userId._id));
   if (!user)

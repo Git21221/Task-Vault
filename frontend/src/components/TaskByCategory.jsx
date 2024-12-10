@@ -13,13 +13,6 @@ function TaskByCategory({
   openMoreModal,
   setOpenMoreModal,
 }) {
-  // console.log(userTasks);
-  // console.log(modTasks);
-  
-  // const adminTasks = useSelector((state) => state.task.adminTasks);
-  console.log(adminTasks);
-  
-  
   const dispatch = useDispatch();
   const handleMoreRef = React.useRef(null);
   const [moreOptions, setMoreOptions] = React.useState({

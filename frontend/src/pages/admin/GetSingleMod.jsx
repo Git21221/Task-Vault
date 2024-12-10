@@ -11,30 +11,32 @@ import {
   Divider,
   Button,
 } from "@mui/material";
-import { getSingleMod } from "../../redux/modSlice";  // Action for getting a single mod
-import { deleteTask, getAllTasksOfUser } from "../../redux/taskSlice";  // Assuming mod's tasks are managed the same way
-import { deleteMod } from "../../redux/modSlice";  // Action for deleting a moderator
+import { getSingleMod } from "../../redux/modSlice"; // Action for getting a single mod
+import { deleteTask, getAllTasksOfUser } from "../../redux/taskSlice"; // Assuming mod's tasks are managed the same way
+import { deleteMod } from "../../redux/modSlice"; // Action for deleting a moderator
 
 function GetSingleMod() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { singleMod } = useSelector((state) => state.mod);
   console.log(singleMod);
-  const { personTasksOfId: modTasks } = useSelector((state) => state.task);  // Assuming tasks are fetched similarly
+  const { personTasksOfId: modTasks } = useSelector((state) => state.task); // Assuming tasks are fetched similarly
   const { id } = useParams();
   const [hoveredTask, setHoveredTask] = useState(null);
 
   useEffect(() => {
     dispatch(
       getSingleMod({
+        dispatch,
         modId: id,
-        action: import.meta.env.VITE_PROFILE_READ,  // Assuming this is to view mod's profile
+        action: import.meta.env.VITE_PROFILE_READ, // Assuming this is to view mod's profile
       })
     );
     dispatch(
       getAllTasksOfUser({
+        dispatch,
         userId: id,
-        action: import.meta.env.VITE_TASK_READ,  // Assuming this is to view mod's tasks
+        action: import.meta.env.VITE_TASK_READ, // Assuming this is to view mod's tasks
       })
     );
   }, [dispatch, id]);
@@ -42,14 +44,25 @@ function GetSingleMod() {
   const handleDeleteMod = () => {
     console.log("Delete mod with ID:", id);
     dispatch(
-      deleteMod({ modId: id, action: import.meta.env.VITE_PROFILE_DELETE })
+      deleteMod({
+        dispatch,
+        modId: id,
+        action: import.meta.env.VITE_PROFILE_DELETE,
+      })
     );
     navigate(-1);
   };
 
   const handleDeleteTask = (taskId) => {
     console.log("Delete task with ID:", taskId);
-    dispatch(deleteTask({ taskId, modId: id, action: import.meta.env.VITE_TASK_DELETE }));
+    dispatch(
+      deleteTask({
+        dispatch,
+        taskId,
+        modId: id,
+        action: import.meta.env.VITE_TASK_DELETE,
+      })
+    );
   };
 
   const handleViewTask = (taskId) => {

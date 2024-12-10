@@ -17,7 +17,7 @@ function UserDashboard() {
     task: {},
   });
   useEffect(() => {
-    dispatch(getAllTasks());
+    dispatch(getAllTasks({dispatch,}));
   }, [dispatch]);
   return (
     <div>

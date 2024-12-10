@@ -18,9 +18,9 @@ const initialState = {
 
 export const createTask = createAsyncThunk(
   "task/createTask",
-  async ({ title, description }, { rejectWithValue }) => {
+  async ({ dispatch, title, description }, { rejectWithValue }) => {
     try {
-      const result = apiClient("tasks/create-task", "POST", {
+      const result = apiClient(dispatch, "tasks/create-task", "POST", {
         body: JSON.stringify({ title, description }),
       });
       return result;
@@ -33,11 +33,12 @@ export const createTask = createAsyncThunk(
 export const updateTask = createAsyncThunk(
   "task/update-task",
   async (
-    { taskId, title, description, status, userId, action },
+    { dispatch, taskId, title, description, status, userId, action },
     { rejectWithValue }
   ) => {
     try {
       const result = apiClient(
+        dispatch,
         `tasks/update-task/${taskId}/${userId}/${action}`,
         "PUT",
         {
@@ -53,9 +54,10 @@ export const updateTask = createAsyncThunk(
 
 export const getTask = createAsyncThunk(
   "task/get-task",
-  async ({ taskId, userId, action }, { rejectWithValue }) => {
+  async ({ dispatch, taskId, userId, action }, { rejectWithValue }) => {
     try {
       const result = apiClient(
+        dispatch,
         `tasks/get-task/${taskId}/${userId}/${action}`,
         "GET"
       );
@@ -66,20 +68,24 @@ export const getTask = createAsyncThunk(
   }
 );
 
-export const getAllTasks = createAsyncThunk("task/get-all-tasks", async () => {
-  try {
-    const result = apiClient("tasks/get-all-tasks", "GET");
-    return result;
-  } catch (error) {
-    return rejectWithValue(error.message);
+export const getAllTasks = createAsyncThunk(
+  "task/get-all-tasks",
+  async ({ dispatch }) => {
+    try {
+      const result = apiClient(dispatch, "tasks/get-all-tasks", "GET");
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-});
+);
 
 export const deleteTask = createAsyncThunk(
   "task/delete-task",
-  async ({ taskId, userId, action }, { rejectWithValue }) => {
+  async ({ dispatch, taskId, userId, action }, { rejectWithValue }) => {
     try {
       const result = apiClient(
+        dispatch,
         `tasks/delete-task/${taskId}/${userId}/${action}`,
         "DELETE"
       );
@@ -92,9 +98,10 @@ export const deleteTask = createAsyncThunk(
 
 export const getAllTasksOfUser = createAsyncThunk(
   "task/get-all-tasks-of-user",
-  async ({ userId, action }, { rejectWithValue }) => {
+  async ({ dispatch, userId, action }, { rejectWithValue }) => {
     try {
       const result = apiClient(
+        dispatch,
         `tasks/get-all-tasks-of-user/${userId}/${action}`,
         "GET"
       );
@@ -198,12 +205,15 @@ const taskSlice = createSlice({
       .addCase(deleteTask.rejected, (state) => {
         state.loading = false;
         state.error = "Error deleting task";
-      }).addCase(getAllTasksOfUser.pending, (state) => {
+      })
+      .addCase(getAllTasksOfUser.pending, (state) => {
         state.loading = true;
-      }).addCase(getAllTasksOfUser.fulfilled, (state, action) => {
+      })
+      .addCase(getAllTasksOfUser.fulfilled, (state, action) => {
         state.loading = false;
         state.personTasksOfId = action.payload.data;
-      }).addCase(getAllTasksOfUser.rejected, (state) => {
+      })
+      .addCase(getAllTasksOfUser.rejected, (state) => {
         state.loading = false;
         state.error = "Error fetching tasks";
       });

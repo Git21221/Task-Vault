@@ -28,12 +28,14 @@ function GetSingleUser() {
   useEffect(() => {
     dispatch(
       getSingleUser({
+        dispatch,
         userId: id,
         action: import.meta.env.VITE_PROFILE_READ,
       })
     );
     dispatch(
       getAllTasksOfUser({
+        dispatch,
         userId: id,
         action: import.meta.env.VITE_TASK_READ,
       })
@@ -43,7 +45,11 @@ function GetSingleUser() {
   const handleDeleteUser = () => {
     console.log("Delete user with ID:", id);
     dispatch(
-      deleteUser({ userId: id, action: import.meta.env.VITE_PROFILE_DELETE })
+      deleteUser({
+        dispatch,
+        userId: id,
+        action: import.meta.env.VITE_PROFILE_DELETE,
+      })
     );
     navigate(-1);
     // API call to delete the user
@@ -51,7 +57,14 @@ function GetSingleUser() {
 
   const handleDeleteTask = (taskId) => {
     console.log("Delete task with ID:", taskId);
-    dispatch(deleteTask({ taskId, userId: id, action: import.meta.env.VITE_TASK_DELETE }));
+    dispatch(
+      deleteTask({
+        dispatch,
+        taskId,
+        userId: id,
+        action: import.meta.env.VITE_TASK_DELETE,
+      })
+    );
     // API call to delete the task
   };
 

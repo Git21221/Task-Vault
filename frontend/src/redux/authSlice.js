@@ -13,9 +13,9 @@ const initialState = {
 
 export const userSignin = createAsyncThunk(
   "auth/userSignin",
-  async (data, { rejectWithValue }) => {
+  async ({ dispatch, data }, { rejectWithValue }) => {
     try {
-      const result = apiClient("users/login", "POST", {
+      const result = apiClient(dispatch, "users/login", "POST", {
         body: JSON.stringify(data),
       });
       return result;
@@ -27,9 +27,9 @@ export const userSignin = createAsyncThunk(
 
 export const userSignup = createAsyncThunk(
   "auth/userSignup",
-  async (data, { rejectWithValue }) => {
+  async ({ dispatch, data }, { rejectWithValue }) => {
     try {
-      const result = apiClient("users/signup", "POST", {
+      const result = apiClient(dispatch, "users/signup", "POST", {
         body: JSON.stringify(data),
       });
       return result;
@@ -41,9 +41,10 @@ export const userSignup = createAsyncThunk(
 
 export const getCurrentPerson = createAsyncThunk(
   "users/get-user",
-  async ({ userId, action }, { rejectWithValue }) => {
+  async ({ dispatch, userId, action }, { rejectWithValue }) => {
     try {
       const result = await apiClient(
+        dispatch,
         `users/get-user-profile/${userId}/${action}`,
         "GET"
       );
@@ -56,9 +57,9 @@ export const getCurrentPerson = createAsyncThunk(
 
 export const verifyToken = createAsyncThunk(
   "users/verify-token",
-  async (_, { rejectWithValue }) => {
+  async ({ dispatch }, { rejectWithValue }) => {
     try {
-      const token = apiClient("validate-token", "GET");
+      const token = await apiClient(dispatch, "validate-token", "GET");
       return token;
     } catch (error) {
       return rejectWithValue({ error: error.message });
@@ -104,12 +105,12 @@ const authSlice = createSlice({
         } else {
           state.loading = false;
           state.isLoggedIn = false;
-          state.error = action.payload.message;
+          state.error = action.payload.error.message;
         }
       })
       .addCase(userSignin.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.error;
+        state.error = action.payload.error.message;
         state.isLoggedIn = false;
       })
       .addCase(userSignup.pending, (state) => {
@@ -118,7 +119,7 @@ const authSlice = createSlice({
       .addCase(userSignup.fulfilled, (state, action) => {
         if (action.payload.code > 300) {
           state.loading = false;
-          state.error = action.payload.message;
+          state.error = action.payload.error.message;
         }
       })
       .addCase(getCurrentPerson.pending, (state) => {
@@ -138,6 +139,22 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload.error;
         state.isLoggedIn = false;
+      })
+      .addCase(verifyToken.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(verifyToken.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.code < 300) {
+          state.isLoggedIn = true;
+        } else {
+          state.isLoggedIn = false;
+        }
+      })
+      .addCase(verifyToken.rejected, (state, action) => {
+        state.loading = false;
+        state.isLoggedIn = false;
+        state.error = action.payload.error;
       });
   },
 });

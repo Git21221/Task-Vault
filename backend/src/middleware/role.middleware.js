@@ -86,7 +86,6 @@ export const verifyRoleAndPermission = asyncFunctionHandler(
           );
       }
       const requestedPersonRoleName = requestedPersonRole[0].userRole[0].name;
-      console.log("requestedPersonRoleName", requestedPersonRoleName);
 
       switch (userWithRoleName) {
         case process.env.ADMIN_ROLE:
