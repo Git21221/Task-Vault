@@ -31,12 +31,12 @@ taskRouter.get(
   verifyRoleAndPermission,
   getTask
 );
-taskRouter.get("/get-all-tasks", verifyJWT, getAllTasksOfPerson);
+taskRouter.get("/get-all-tasks", verifyJWT, getAllTasksOfPerson); // role wise get all the task (eg: admin will get all tasks of user and mod, user will get only his tasks, and mod will get all suers tasks).
 taskRouter.get(
   "/get-all-tasks-of-user/:userId/:actionType",
   verifyJWT,
   verifyRoleAndPermission,
   getTasksOfUser
-);
+); // get all the tasks of a particular user regardless of the role, if the permission is allowed.
 
 export { taskRouter };

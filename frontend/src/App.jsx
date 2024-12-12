@@ -23,6 +23,8 @@ import GetSingleMod from "./pages/admin/GetSingleMod";
 import Signup from "./pages/Signup";
 import Loader from "./components/Loader";
 import { useEffect } from "react";
+import TaskByCategory from "./components/TaskByCategory";
+import NotesAdmin from "./pages/admin/NotesAdmin";
 
 function App() {
   const { isLoggedIn, userRole } = useSelector((state) => state.auth);
@@ -33,7 +35,7 @@ function App() {
     }
   }, [location.pathname, isLoggedIn]);
   const lastRoute = localStorage.getItem("lastRoute") || "/";
-  
+
   return (
     <div>
       <Loader />
@@ -131,6 +133,12 @@ function App() {
                 }
               />
               <Route
+                path="notes"
+                element={
+                  isLoggedIn ? <NotesAdmin /> : <Navigate to="/signin" replace />
+                }
+              />
+              <Route
                 path="settings"
                 element={
                   isLoggedIn ? (
@@ -155,7 +163,13 @@ function App() {
             >
               <Route
                 path="moderator-dashboard"
-                element={<ModeratorDashboard />}
+                element={
+                  isLoggedIn ? (
+                    <ModeratorDashboard />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
               />
             </Route>
 
@@ -178,6 +192,12 @@ function App() {
                   ) : (
                     <Navigate to={"/signin"} replace />
                   )
+                }
+              />
+              <Route
+                path="notes"
+                element={
+                  isLoggedIn ? <Home /> : <Navigate to="/signin" replace />
                 }
               />
             </Route>

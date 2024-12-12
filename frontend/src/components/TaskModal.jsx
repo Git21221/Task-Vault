@@ -12,25 +12,27 @@ function TaskModal({ openTaskModal }) {
   );
   const taskRef = useRef(null);
   const dispatch = useDispatch();
+
   useEffect(() => {
     const handleOutsideClick = (e) => {
-      console.log(openTaskModal);
       if (taskRef.current && !taskRef.current.contains(e.target)) {
-        task !== openTaskModal?.title ||
-        status !== openTaskModal?.status ||
-        description !== openTaskModal?.description
-          ? dispatch(
-              updateTask({
-                dispatch,
-                title: task,
-                description: description || "",
-                status: status,
-                taskId: openTaskModal?._id,
-                userId: openTaskModal?.owner?._id,
-                action: import.meta.env.VITE_TASK_UPDATE,
-              })
-            )
-          : null;
+        if (
+          task !== openTaskModal?.title ||
+          status !== openTaskModal?.status ||
+          description !== openTaskModal?.description
+        ) {
+          dispatch(
+            updateTask({
+              dispatch,
+              title: task,
+              description: description || "",
+              status: status,
+              taskId: openTaskModal?._id,
+              userId: openTaskModal?.owner?._id,
+              action: import.meta.env.VITE_TASK_UPDATE,
+            })
+          );
+        }
         dispatch(setOpenTaskModal(false));
       }
     };
@@ -43,37 +45,40 @@ function TaskModal({ openTaskModal }) {
 
   const handleTaskAdd = (e) => {
     e.preventDefault();
-    task
-      ? dispatch(
-          updateTask({
-            dispatch,
-            title: task,
-            description: description || "",
-            status: status,
-            taskId: openTaskModal?._id,
-            userId: openTaskModal?.owner?._id,
-            action: import.meta.env.VITE_TASK_UPDATE,
-          })
-        )
-      : null;
+    if (task) {
+      dispatch(
+        updateTask({
+          dispatch,
+          title: task,
+          description: description || "",
+          status: status,
+          taskId: openTaskModal?._id,
+          userId: openTaskModal?.owner?._id,
+          action: import.meta.env.VITE_TASK_UPDATE,
+        })
+      );
+    }
     setDescription("");
     setTask("");
     dispatch(setOpenTaskModal({ open: false, task: {} }));
   };
 
-  const handleTask = (e) => {
-    setTask(e.target.value);
-  };
-  const handleDescription = (e) => {
-    setDescription(e.target.value);
-  };
-  const handleStatusChange = (e) => {
-    setStatus(e.target.value);
-  };
+  const handleTask = (e) => setTask(e.target.value);
+  const handleDescription = (e) => setDescription(e.target.value);
+  const handleStatusChange = (e) => setStatus(e.target.value);
+
   return (
     <div className="fixed z-10 inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-      <div ref={taskRef} className="bg-white rounded-lg shadow-md w-[400px]">
-        {/* Header */}
+      <div
+        ref={taskRef}
+        className="bg-white rounded-lg shadow-md"
+        style={{
+          maxWidth: "90%", // Maximum width is 90% of the viewport
+          width: "100%", // Default to full width
+          minWidth: "300px", // Minimum width to ensure usability
+          maxWidth: "700px", // Maximum width when space allows
+        }}
+      >
         <FormWrapper>
           <div className="rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full px-4 py-3 flex flex-col items-end gap-4">
             <div className="w-full flex flex-col gap-4">
@@ -82,7 +87,7 @@ function TaskModal({ openTaskModal }) {
                 onChange={handleTask}
                 type="text"
                 placeholder="Title"
-                className=" w-full focus:outline-none bg-transparent"
+                className="w-full focus:outline-none bg-transparent"
               />
               <hr />
               <textarea
@@ -90,7 +95,7 @@ function TaskModal({ openTaskModal }) {
                 onChange={handleDescription}
                 type="text"
                 placeholder="Description"
-                className=" w-full focus:outline-none bg-transparent resize-y"
+                className="w-full focus:outline-none bg-transparent resize-y"
               />
             </div>
             <div className="infoOfTask w-full text-xs flex justify-between">
@@ -111,7 +116,6 @@ function TaskModal({ openTaskModal }) {
                   {allStatus.map((status, index) => (
                     <option key={index} value={status}>
                       {status}
-                      {/* Capitalize status */}
                     </option>
                   ))}
                 </select>

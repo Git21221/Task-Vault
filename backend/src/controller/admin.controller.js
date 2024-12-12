@@ -9,6 +9,7 @@ import {
   accessTokenOptions,
   refreshTokenOptions,
 } from "../utils/refreshAccessToken.util.js";
+import { Permission } from "../models/permission.model.js";
 
 //controller for registering an admin
 export const registerAdmin = asyncFunctionHandler(async (req, res) => {
@@ -414,6 +415,49 @@ export const getAllPermissionsByRole = asyncFunctionHandler(
   }
 );
 
+export const getAllPermissions = asyncFunctionHandler(async (req, res) => {
+  const loggedInAdminId = req?.user?._id;
+  const admin = await User.aggregate([
+    {
+      $match: {
+        _id: loggedInAdminId,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+  ]);
+  const roleName = admin[0]?.role[0]?.name;
+  if (roleName === process.env.ADMIN_ROLE) {
+    const allPermissions = await Permission.aggregate([
+      {
+        $project: {
+          task: 1,
+          profile: 1,
+          role: 1,
+        },
+      },
+    ]);
+    if (!allPermissions)
+      return res
+        .status(500)
+        .json(
+          new apiErrorHandler(
+            500,
+            "Permissions not found for some unknown reason"
+          )
+        );
+    return res
+      .status(200)
+      .json(new apiResponse(200, "Permissions found", allPermissions));
+  }
+});
+
 //only moderator role permissions will be updated by admin
 export const updateModeratorPermissionByAdmin = asyncFunctionHandler(
   async (req, res) => {
@@ -432,8 +476,17 @@ export const updateModeratorPermissionByAdmin = asyncFunctionHandler(
           as: "role",
         },
       },
+      {
+        $lookup: {
+          from: "permissions",
+          localField: "permissions",
+          foreignField: "_id",
+          as: "permissions",
+        },
+      },
     ]);
     const roleName = admin[0]?.role[0]?.name;
+
     if (roleName === process.env.ADMIN_ROLE) {
       const { roleId, permissions } = req?.body;
       if (permissions.length === 0)
@@ -445,11 +498,16 @@ export const updateModeratorPermissionByAdmin = asyncFunctionHandler(
       const role = await Role.findById(new mongoose.Types.ObjectId(roleId)); //also findByIdAndUpdate can be used
       if (!role)
         return res.status(404).json(new apiErrorHandler(404, "Role not found"));
+      //only moderator can be updated by admin
       if (role.name === process.env.MODERATOR_ROLE) {
-        role.permissions = permissions.map(
-          (permission) => new mongoose.Types.ObjectId(permission)
-        ); //in frontend permissions initial array should contain the initial permissions
-        const updatedRole = await role.save();
+        const adminPermissions = admin[0]?.permissions.map((perm) =>
+          perm._id.toString()
+        );
+
+        role.permissions = permissions
+          .filter((permission) => adminPermissions.includes(permission)) // Only keep valid permissions
+          .map((permission) => new mongoose.Types.ObjectId(permission)); // Convert to ObjectId //in frontend permissions initial array should contain the initial permissions
+        let updatedRole = await role.save();
         if (!updatedRole)
           return res
             .status(500)
@@ -459,8 +517,20 @@ export const updateModeratorPermissionByAdmin = asyncFunctionHandler(
                 "Role not updated for some unknown reason"
               )
             );
-
-        return res.status(200).json(new apiResponse(200, "Role updated", role));
+            updatedRole = await Role.aggregate([
+              {
+                $match: { _id: new mongoose.Types.ObjectId(roleId) },
+              },
+              {
+                $lookup: {
+                  from: "permissions",
+                  localField: "permissions",
+                  foreignField: "_id",
+                  as: "permissions",
+                },
+              },
+            ])
+        return res.status(200).json(new apiResponse(200, "Role updated", updatedRole));
       }
     }
     return res
@@ -576,10 +646,10 @@ export const getAllRoles = asyncFunctionHandler(async (req, res) => {
     if (!allRoles)
       return res
         .status(500)
-        .json(new apiErrorHandler(500, "Roles not found for some unknown reason"));
-    return res
-      .status(200)
-      .json(new apiResponse(200, "Roles found", allRoles));
+        .json(
+          new apiErrorHandler(500, "Roles not found for some unknown reason")
+        );
+    return res.status(200).json(new apiResponse(200, "Roles found", allRoles));
   }
   return res
     .status(401)

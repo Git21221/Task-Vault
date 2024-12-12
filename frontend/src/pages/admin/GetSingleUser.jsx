@@ -19,9 +19,8 @@ function GetSingleUser() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { singleUser } = useSelector((state) => state.admin);
-  console.log(singleUser);
-
   const { personTasksOfId: tasks } = useSelector((state) => state.task);
+  const { openTaskModal } = useSelector((state) => state.task);
   const { id } = useParams();
   const [hoveredTask, setHoveredTask] = useState(null);
 
@@ -43,7 +42,6 @@ function GetSingleUser() {
   }, [dispatch, id]);
 
   const handleDeleteUser = () => {
-    console.log("Delete user with ID:", id);
     dispatch(
       deleteUser({
         dispatch,
@@ -56,7 +54,6 @@ function GetSingleUser() {
   };
 
   const handleDeleteTask = (taskId) => {
-    console.log("Delete task with ID:", taskId);
     dispatch(
       deleteTask({
         dispatch,
@@ -69,7 +66,7 @@ function GetSingleUser() {
   };
 
   const handleViewTask = (taskId) => {
-    console.log("View task with ID:", taskId);
+    dispatch(openTaskModal)
     // Logic to navigate or display task details
   };
 

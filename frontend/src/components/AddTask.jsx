@@ -11,9 +11,7 @@ function AddTask() {
   const oustsideClickRef = useRef(null);
   const handleTaskAdd = (e) => {
     e.preventDefault();
-    task
-      ? dispatch(createTask({ dispatch,title: task, description: description || "" }))
-      : null;
+    task ? dispatch(createTask({ dispatch, title: task, description })) : null;
     setTaskCrete(false);
     setDescription("");
     setTask("");
@@ -26,9 +24,7 @@ function AddTask() {
       ) {
         //save task to backend
         task
-          ? dispatch(
-              createTask({ dispatch,title: task, description: description || "" })
-            )
+          ? dispatch(createTask({ dispatch, title: task, description }))
           : null;
         setTaskCrete(false);
         setDescription("");
@@ -39,7 +35,7 @@ function AddTask() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [task]);
+  }, [task, description]);
   const handleTask = (e) => {
     setTask(e.target.value);
   };

@@ -1,16 +1,13 @@
 import React, { useEffect } from "react";
-import AddTask from "../../components/AddTask";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllTasksOfUser } from "../../redux/taskSlice";
-import TaskByCategory from "../../components/TaskByCategory";
 import TaskModal from "../../components/TaskModal";
-import { allStatus } from "../../utils/constant";
+import TaskByCategory from "../../components/TaskByCategory";
+import AddTask from "../../components/AddTask";
 
-function UserDashboard() {
+function NotesAdmin() {
   const { personTasksOfId, openTaskModal } = useSelector((state) => state.task);
   const { user } = useSelector((state) => state.auth);
-  console.log(personTasksOfId);
-
   const dispatch = useDispatch();
   const [openMoreModal, setOpenMoreModal] = React.useState({
     show: false,
@@ -24,7 +21,7 @@ function UserDashboard() {
         action: import.meta.env.VITE_TASK_READ,
       })
     );
-  }, [dispatch]);
+  }, []);
   return (
     <div>
       {openTaskModal.open && (
@@ -47,4 +44,4 @@ function UserDashboard() {
   );
 }
 
-export default UserDashboard;
+export default NotesAdmin;

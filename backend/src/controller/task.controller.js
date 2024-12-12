@@ -211,6 +211,11 @@ export const getAllTasksOfPerson = asyncFunctionHandler(async (req, res) => {
     case process.env.USER_ROLE:
       allTasksForUser = await Task.aggregate([
         {
+          $match: {
+            owner: loggedInPersonId,
+          },
+        },
+        {
           $lookup: {
             from: "users",
             localField: "owner",

@@ -6,6 +6,8 @@ const initialState = {
   roles: [],
   admin: {},
   singleUser: {},
+  roleWisePermissions: [],
+  allPermissions: [],
   loading: false,
   progress: 0,
   error: null,
@@ -13,7 +15,7 @@ const initialState = {
 
 export const getAllRoles = createAsyncThunk(
   "admin/get-all-roles",
-  async ({dispatch}, { rejectWithValue }) => {
+  async ({ dispatch }, { rejectWithValue }) => {
     try {
       const result = await apiClient(dispatch, "admin/get-all-roles", "GET");
       return result;
@@ -61,11 +63,62 @@ export const getSingleUser = createAsyncThunk(
 
 export const adminSignup = createAsyncThunk(
   "admin/admin-signup",
-  async ({dispatch, data}, { rejectWithValue }) => {
+  async ({ dispatch, data }, { rejectWithValue }) => {
     try {
       const result = await apiClient(dispatch, "admin/signup", "POST", {
         body: JSON.stringify(data),
       });
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getAllPermissionByRole = createAsyncThunk(
+  "admin/get-all-permission",
+  async ({ dispatch }, { rejectWithValue }) => {
+    try {
+      const result = await apiClient(
+        dispatch,
+        "admin/get-all-permissions-by-role",
+        "GET"
+      );
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getAllPermissions = createAsyncThunk(
+  "admin/get-all-permissions",
+  async ({ dispatch }, { rejectWithValue }) => {
+    try {
+      const result = await apiClient(
+        dispatch,
+        "admin/get-all-permissions",
+        "GET"
+      );
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updatePermissionOfRole = createAsyncThunk(
+  "admin/update-permission-of-role",
+  async ({ dispatch, roleId, permissions }, { rejectWithValue }) => {
+    try {
+      const result = await apiClient(
+        dispatch,
+        `admin/update-permissions-of-role`,
+        "PUT",
+        {
+          body: JSON.stringify({ roleId, permissions }),
+        }
+      );
       return result;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -136,6 +189,54 @@ const adminSlice = createSlice({
         state.error = action.payload;
         state.loading = false;
         state.singleUser = {};
+        state.progress = 100;
+      })
+      .addCase(getAllPermissionByRole.pending, (state) => {
+        state.loading = true;
+        state.progress = 0;
+      })
+      .addCase(getAllPermissionByRole.fulfilled, (state, action) => {
+        state.loading = false;
+        state.roleWisePermissions = action.payload.data;
+        state.progress = 100;
+      })
+      .addCase(getAllPermissionByRole.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
+        state.roleWisePermissions = [];
+        state.progress = 100;
+      })
+      .addCase(getAllPermissions.pending, (state) => {
+        state.loading = true;
+        state.progress = 0;
+      })
+      .addCase(getAllPermissions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allPermissions = action.payload.data;
+        state.progress = 100;
+      })
+      .addCase(getAllPermissions.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
+        state.allPermissions = [];
+        state.progress = 100;
+      })
+      .addCase(updatePermissionOfRole.pending, (state) => {
+        state.loading = true;
+        state.progress = 0;
+      })
+      .addCase(updatePermissionOfRole.fulfilled, (state, action) => {
+        state.loading = false;
+        state.roleWisePermissions = state.roleWisePermissions.map((role) =>
+          role.name === action.payload.data[0].name
+            ? { ...role, permissions: action.payload.data[0].permissions }
+            : role
+        );
+        state.progress = 100;
+      })
+      .addCase(updatePermissionOfRole.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
         state.progress = 100;
       });
   },

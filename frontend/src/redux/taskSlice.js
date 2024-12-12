@@ -120,6 +120,9 @@ const taskSlice = createSlice({
       state.openTaskModal.open = action.payload.open;
       state.openTaskModal.task = action.payload.task;
     },
+    removeTask: (state, action) => {
+      state.tasks = state.tasks.filter((task) => task._id !== action.payload.id);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -129,6 +132,7 @@ const taskSlice = createSlice({
       .addCase(createTask.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = [...state.tasks, action.payload.data];
+        state.personTasksOfId = [...state.personTasksOfId, action.payload.data];
         state.error = null;
       })
       .addCase(createTask.rejected, (state, action) => {
@@ -151,7 +155,6 @@ const taskSlice = createSlice({
       .addCase(getAllTasks.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = action.payload.data;
-        console.log(action.payload.data);
         console.log(
           action.payload.data.filter(
             (task) => task.owner.role.name === import.meta.env.VITE_ADMIN_ROLE
@@ -201,6 +204,9 @@ const taskSlice = createSlice({
         state.personTasksOfId = state.personTasksOfId.filter(
           (task) => task._id !== action.payload.data._id
         );
+        state.tasks = state.tasks.filter(
+          (task) => task._id !== action.payload.data._id
+        );
       })
       .addCase(deleteTask.rejected, (state) => {
         state.loading = false;
@@ -220,5 +226,5 @@ const taskSlice = createSlice({
   },
 });
 
-export const { setOpenTaskModal } = taskSlice.actions;
+export const { setOpenTaskModal, removeTask } = taskSlice.actions;
 export default taskSlice;

@@ -107,7 +107,7 @@ function GetSingleMod() {
                         ? "Can update profile"
                         : perm.profile
                       : perm.role
-                      ? perm.role === "role:action:update"
+                      ? perm.role === "action:update"
                         ? "Can update role"
                         : perm.role
                       : "Unknown Permission"}

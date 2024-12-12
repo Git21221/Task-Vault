@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   deleteAdmin,
   getAdminProfile,
+  getAllPermissions,
   getAllPermissionsByRole,
   getAllRoles,
   loginAdmin,
@@ -37,7 +38,12 @@ adminRouter.get(
 );
 
 //can be accessed by admin, moderator and users
-adminRouter.get("/get-all-permissions", verifyJWT, getAllPermissionsByRole);
+adminRouter.get(
+  "/get-all-permissions-by-role",
+  verifyJWT,
+  getAllPermissionsByRole
+);
+adminRouter.get("/get-all-permissions", verifyJWT, getAllPermissions);
 adminRouter.put(
   "/update-permissions-of-role",
   verifyJWT,

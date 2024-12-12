@@ -44,6 +44,12 @@ const Sidebar = () => {
       },
       {
         id: 5,
+        label: "Notes",
+        icon: <FaRegLightbulb />,
+        path: "notes",
+      },
+      {
+        id: 6,
         label: "Settings",
         icon: <IoSettingsOutline />,
         path: "settings",
