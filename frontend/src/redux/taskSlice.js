@@ -191,6 +191,17 @@ const taskSlice = createSlice({
           }
           return task;
         });
+        state.personTasksOfId = state.personTasksOfId.map((task) => {
+          if (task._id === action.payload.data._id) {
+            return {
+              ...task,
+              title: action.payload.data.title || "",
+              description: action.payload.data.description || "",
+              status: action.payload.data.status || "",
+            };
+          }
+          return task;
+        });
       })
       .addCase(updateTask.rejected, (state) => {
         state.loading = false;

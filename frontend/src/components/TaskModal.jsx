@@ -28,7 +28,7 @@ function TaskModal({ openTaskModal }) {
               description: description || "",
               status: status,
               taskId: openTaskModal?._id,
-              userId: openTaskModal?.owner?._id,
+              userId: openTaskModal?.owner,
               action: import.meta.env.VITE_TASK_UPDATE,
             })
           );
@@ -53,7 +53,7 @@ function TaskModal({ openTaskModal }) {
           description: description || "",
           status: status,
           taskId: openTaskModal?._id,
-          userId: openTaskModal?.owner?._id,
+          userId: openTaskModal?.owner,
           action: import.meta.env.VITE_TASK_UPDATE,
         })
       );

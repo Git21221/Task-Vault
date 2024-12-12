@@ -517,20 +517,22 @@ export const updateModeratorPermissionByAdmin = asyncFunctionHandler(
                 "Role not updated for some unknown reason"
               )
             );
-            updatedRole = await Role.aggregate([
-              {
-                $match: { _id: new mongoose.Types.ObjectId(roleId) },
-              },
-              {
-                $lookup: {
-                  from: "permissions",
-                  localField: "permissions",
-                  foreignField: "_id",
-                  as: "permissions",
-                },
-              },
-            ])
-        return res.status(200).json(new apiResponse(200, "Role updated", updatedRole));
+        updatedRole = await Role.aggregate([
+          {
+            $match: { _id: new mongoose.Types.ObjectId(roleId) },
+          },
+          {
+            $lookup: {
+              from: "permissions",
+              localField: "permissions",
+              foreignField: "_id",
+              as: "permissions",
+            },
+          },
+        ]);
+        return res
+          .status(200)
+          .json(new apiResponse(200, "Role updated", updatedRole));
       }
     }
     return res

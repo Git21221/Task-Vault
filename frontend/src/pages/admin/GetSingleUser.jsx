@@ -12,8 +12,14 @@ import {
   Button,
 } from "@mui/material";
 import { getSingleUser } from "../../redux/adminSlice";
-import { deleteTask, getAllTasksOfUser } from "../../redux/taskSlice";
+import {
+  deleteTask,
+  getAllTasksOfUser,
+  setOpenTaskModal,
+} from "../../redux/taskSlice";
 import { deleteUser } from "../../redux/userSlice";
+import TaskModal from "../../components/TaskModal";
+import { allStatus } from "../../utils/constant";
 
 function GetSingleUser() {
   const dispatch = useDispatch();
@@ -50,7 +56,6 @@ function GetSingleUser() {
       })
     );
     navigate(-1);
-    // API call to delete the user
   };
 
   const handleDeleteTask = (taskId) => {
@@ -62,16 +67,18 @@ function GetSingleUser() {
         action: import.meta.env.VITE_TASK_DELETE,
       })
     );
-    // API call to delete the task
   };
 
-  const handleViewTask = (taskId) => {
-    dispatch(openTaskModal)
+  const handleViewTask = (task) => {
+    dispatch(setOpenTaskModal({ open: true, task }));
     // Logic to navigate or display task details
   };
 
   return (
     <Box sx={{ padding: 4 }}>
+      {openTaskModal.open && (
+        <TaskModal allStatus={allStatus} openTaskModal={openTaskModal.task} />
+      )}
       {/* User Details */}
       {singleUser && (
         <Paper elevation={3} sx={{ padding: 3, marginBottom: 4 }}>
@@ -136,7 +143,7 @@ function GetSingleUser() {
                     <Button
                       variant="outlined"
                       color="primary"
-                      onClick={() => handleViewTask(task._id)}
+                      onClick={() => handleViewTask(task)}
                     >
                       View
                     </Button>

@@ -4,6 +4,7 @@ import { getAllTasksOfUser } from "../../redux/taskSlice";
 import TaskModal from "../../components/TaskModal";
 import TaskByCategory from "../../components/TaskByCategory";
 import AddTask from "../../components/AddTask";
+import { allStatus } from "../../utils/constant";
 
 function NotesAdmin() {
   const { personTasksOfId, openTaskModal } = useSelector((state) => state.task);
