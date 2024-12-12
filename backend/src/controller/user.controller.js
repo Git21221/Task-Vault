@@ -10,6 +10,7 @@ import {
   refreshTokenOptions,
 } from "../utils/refreshAccessToken.util.js";
 import jwt from "jsonwebtoken";
+import { Task } from "../models/task.model.js";
 
 //controller for registering a user
 export const registerUser = asyncFunctionHandler(async (req, res) => {
@@ -261,6 +262,15 @@ export const deleteUser = asyncFunctionHandler(async (req, res) => {
   const user = await User.findById(userId);
   if (!user)
     return res.status(404).json(new apiErrorHandler(404, "User not found"));
+  const tasks = await Task.deleteMany({
+    owner: new mongoose.Types.ObjectId(userId),
+  });
+  if (!tasks)
+    return res
+      .status(500)
+      .json(
+        new apiErrorHandler(500, "Tasks not deleted for some unknown reason")
+      );
   const deletedUser = await user.deleteOne();
   if (!deletedUser.acknowledged || deletedUser.deletedCount === 0)
     return res
@@ -324,7 +334,14 @@ export const getUserProfile = asyncFunctionHandler(async (req, res) => {
     return res.status(404).json(new apiErrorHandler(404, "User not found"));
   return res
     .status(200)
-    .json(new apiResponse(200, "User profile", userFullProfile[0], userFullProfile[0].userRole[0].name));
+    .json(
+      new apiResponse(
+        200,
+        "User profile",
+        userFullProfile[0],
+        userFullProfile[0].userRole[0].name
+      )
+    );
 });
 
 export const getAllUsers = asyncFunctionHandler(async (req, res) => {

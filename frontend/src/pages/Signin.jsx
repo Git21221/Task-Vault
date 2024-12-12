@@ -12,8 +12,7 @@ function Signin() {
   const loading = useSelector((state) => state.ui.loading);
 
   const handleFormSubmit = (data) => {
-    dispatch(userSignin({dispatch,data})).then((res) => {
-      console.log(res);
+    dispatch(userSignin({ dispatch, data })).then((res) => {
       if (res.payload.code > 300) {
         setErrorMessage(res.payload.message);
         setSuccessMessage("");
@@ -24,7 +23,7 @@ function Signin() {
       }
     });
   };
-if(loading) return null;
+  if (loading) return null;
   return (
     <FormWrapper onSubmit={handleFormSubmit}>
       <div className="flex items-center h-screen">
@@ -60,7 +59,10 @@ if(loading) return null;
             Forgot password?
           </Button>
           <div className="flex justify-center gap-2 items-center w-full">
-            Not a member?{" "} <Link to="/signup" className="text-[#1565C0]">Sign up</Link>
+            Not a member?{" "}
+            <Link to="/signup" className="text-[#1565C0]">
+              Sign up
+            </Link>
           </div>
         </div>
       </div>

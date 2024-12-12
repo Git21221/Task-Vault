@@ -15,9 +15,9 @@ function AdminDashboard() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllTasks({dispatch,}));
-    dispatch(getAllUsers({dispatch,}));
-    dispatch(getAllMods({dispatch,}));
+    dispatch(getAllTasks({dispatch}));
+    dispatch(getAllUsers({dispatch}));
+    dispatch(getAllMods({dispatch}));
   }, [dispatch]);
 
   const stats = [

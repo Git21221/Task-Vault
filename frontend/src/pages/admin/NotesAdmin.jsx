@@ -22,7 +22,7 @@ function NotesAdmin() {
         action: import.meta.env.VITE_TASK_READ,
       })
     );
-  }, []);
+  }, [dispatch]);
   return (
     <div>
       {openTaskModal.open && (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FormWrapper, Input, Button, SelectInput } from "form-snippet"; // Assuming `Select` is available in 'form-snippet'
+import { FormWrapper, Input, Button, SelectInput } from "form-snippet";
 import { useDispatch } from "react-redux";
 import { userSignup } from "../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,13 +13,12 @@ function Signup() {
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleFormSubmit = (data) => {
-    console.log(data);
     dispatch(
       data.role === import.meta.env.VITE_ADMIN_ROLE
-        ? adminSignup({dispatch, data})
+        ? adminSignup({ dispatch, data })
         : data.role === import.meta.env.VITE_MOD_ROLE
-        ? modSignup({dispatch, data})
-        : userSignup({dispatch, data})
+        ? modSignup({ dispatch, data })
+        : userSignup({ dispatch, data })
     ).then((res) => {
       if (res.payload.code > 300) {
         setErrorMessage(res.payload.message);
@@ -27,7 +26,7 @@ function Signup() {
       } else {
         setSuccessMessage(res.payload.message);
         setErrorMessage("");
-        navigate("/");
+        navigate("/signin");
       }
     });
   };

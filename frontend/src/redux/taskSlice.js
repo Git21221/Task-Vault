@@ -155,11 +155,7 @@ const taskSlice = createSlice({
       .addCase(getAllTasks.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = action.payload.data;
-        console.log(
-          action.payload.data.filter(
-            (task) => task.owner.role.name === import.meta.env.VITE_ADMIN_ROLE
-          )
-        );
+        console.log(action.payload.data);
         state.userTasks = action.payload.data.filter(
           (task) => task.owner.role.name === import.meta.env.VITE_USER_ROLE
         );

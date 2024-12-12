@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "build": "vercel build",
     "dev": "nodemon -r dotenv/config --experimental-json-modules index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -9,6 +9,7 @@ import {
 } from "../utils/refreshAccessToken.util.js";
 import { generateAccessAndRefreshToken } from "../utils/generateAccessRefreshToken.util.js";
 import mongoose from "mongoose";
+import { Task } from "../models/task.model.js";
 
 //controller for registering an moderator
 export const registerModerator = asyncFunctionHandler(async (req, res) => {
@@ -234,12 +235,17 @@ export const deleteMod = asyncFunctionHandler(async (req, res) => {
     return res
       .status(404)
       .json(new apiErrorHandler(404, "Moderator not found"));
+  //delete all his tasks
+  const tasks = await Task.deleteMany({ owner: new mongoose.Types.ObjectId(userId) });
+  console.log(tasks);
+  if (!tasks)
+    return res.status(500).json(new apiErrorHandler(500, "Issue in deleting tasks"));
   const modAfterDelete = await mod.deleteOne();
   if (!modAfterDelete.acknowledged || modAfterDelete.deletedCount !== 1)
     return res
       .status(500)
       .json(new apiErrorHandler(500, "Issue in deleting moderator"));
-  return res.status(200).json(new apiResponse(200, "Moderator deleted", mod));
+  return res.status(200).json(new apiResponse(200, "Moderator and all tasks deleted", mod));
 });
 
 export const getModProfile = asyncFunctionHandler(async (req, res) => {

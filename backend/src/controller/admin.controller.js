@@ -10,6 +10,7 @@ import {
   refreshTokenOptions,
 } from "../utils/refreshAccessToken.util.js";
 import { Permission } from "../models/permission.model.js";
+import { Task } from "../models/task.model.js";
 
 //controller for registering an admin
 export const registerAdmin = asyncFunctionHandler(async (req, res) => {
@@ -235,6 +236,10 @@ export const deleteAdmin = asyncFunctionHandler(async (req, res) => {
   const admin = await User.findById(userId);
   if (!admin)
     return res.status(404).json(new apiErrorHandler(404, "Admin not found"));
+  const tasks = await Task.deleteMany({
+    owner: new mongoose.Types.ObjectId(userId),
+  });
+  if(!tasks) return res.status(500).json(new apiErrorHandler(500, "Tasks not deleted for some unknown reason"));
   const deleteAdmin = await admin.deleteOne();
   if (!deleteAdmin)
     return res

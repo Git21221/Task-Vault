@@ -188,7 +188,7 @@ function ModeratorManagementByAdmin() {
                     e.stopPropagation();
                     // Add delete functionality here
                     alert(`Delete functionality for moderator ${mod._id}`);
-                    dispatch(deleteMod({modId: mod._id, action: import.meta.env.VITE_PROFILE_DELETE}));
+                    dispatch(deleteMod({dispatch, modId: mod._id, action: import.meta.env.VITE_PROFILE_DELETE}));
                   }}
                 >
                   Delete
