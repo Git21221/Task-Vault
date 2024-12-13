@@ -2,6 +2,8 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   loading: false,
+  theme: {},
+  sidebar: false
 }
 
 const uiSlice = createSlice({
@@ -14,8 +16,11 @@ const uiSlice = createSlice({
     hideLoader: (state) => {
       state.loading = false;
     },
+    toggleSidebar: (state) => {
+      state.sidebar = !state.sidebar;
+    },
   },
 })
 
-export const { showLoader, hideLoader } = uiSlice.actions;
+export const { showLoader, hideLoader, toggleSidebar } = uiSlice.actions;
 export default uiSlice;

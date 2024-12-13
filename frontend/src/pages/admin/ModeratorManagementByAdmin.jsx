@@ -83,7 +83,7 @@ function ModeratorManagementByAdmin() {
   };
 
   return (
-    <Box sx={{ padding: "24px" }}>
+    <Box sx={{ padding: "12px" }}>
       <Typography variant="h4" sx={{ mb: 4 }}>
         Moderator Management
       </Typography>

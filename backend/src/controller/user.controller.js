@@ -272,6 +272,7 @@ export const deleteUser = asyncFunctionHandler(async (req, res) => {
         new apiErrorHandler(500, "Tasks not deleted for some unknown reason")
       );
   const deletedUser = await user.deleteOne();
+  console.log(deletedUser);
   if (!deletedUser.acknowledged || deletedUser.deletedCount === 0)
     return res
       .status(500)

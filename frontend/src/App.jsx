@@ -14,17 +14,16 @@ import UserLayout from "./pages/user/UserLayout";
 import WrongRoleRoute from "./pages/WrongRoleRoute";
 import Validate from "./pages/Validate";
 import Home from "./pages/Home";
-import UserManagementByAdmin from "./pages/admin/UserManagementByAdmin";
 import ModeratorManagementByAdmin from "./pages/admin/ModeratorManagementByAdmin";
-import SettingsAdmin from "./pages/admin/SettingsAdmin";
 import ManagePermissions from "./pages/admin/ManagePermissions";
-import GetSingleUser from "./pages/admin/GetSingleUser";
+import GetSingleUser from "./pages/GetSingleUser";
 import GetSingleMod from "./pages/admin/GetSingleMod";
 import Signup from "./pages/Signup";
 import Loader from "./components/Loader";
 import { useEffect } from "react";
-import TaskByCategory from "./components/TaskByCategory";
 import NotesAdmin from "./pages/admin/NotesAdmin";
+import Profile from "./pages/Profile";
+import UserManagement from "./pages/UserManagement";
 
 function App() {
   const { isLoggedIn, userRole } = useSelector((state) => state.auth);
@@ -86,7 +85,7 @@ function App() {
                 path="user-management"
                 element={
                   isLoggedIn ? (
-                    <UserManagementByAdmin />
+                    <UserManagement />
                   ) : (
                     <Navigate to="/signin" replace />
                   )
@@ -139,10 +138,10 @@ function App() {
                 }
               />
               <Route
-                path="settings"
+                path="profile"
                 element={
                   isLoggedIn ? (
-                    <SettingsAdmin />
+                    <Profile />
                   ) : (
                     <Navigate to="/signin" replace />
                   )
@@ -166,6 +165,28 @@ function App() {
                 element={
                   isLoggedIn ? (
                     <ModeratorDashboard />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
+                }
+              />
+              <Route 
+                path="manage-users"
+                element={
+                  isLoggedIn ? <UserManagement /> : <Navigate to="/signin" replace />
+                }
+              />
+              <Route
+                path="manage-users/user/:id"
+                element={
+                  isLoggedIn ? <GetSingleUser /> : <Navigate to="/signin" replace />
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  isLoggedIn ? (
+                    <Profile />
                   ) : (
                     <Navigate to="/signin" replace />
                   )
@@ -198,6 +219,16 @@ function App() {
                 path="notes"
                 element={
                   isLoggedIn ? <Home /> : <Navigate to="/signin" replace />
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  isLoggedIn ? (
+                    <Profile />
+                  ) : (
+                    <Navigate to="/signin" replace />
+                  )
                 }
               />
             </Route>

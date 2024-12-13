@@ -10,7 +10,6 @@ function AdminDashboard() {
   const { tasks } = useSelector((state) => state.task);
   const { users } = useSelector((state) => state.user);
   const { mods } = useSelector((state) => state.mod);
-  console.log(mods);
 
   const dispatch = useDispatch();
 

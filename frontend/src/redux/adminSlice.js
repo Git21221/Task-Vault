@@ -28,7 +28,6 @@ export const getAllRoles = createAsyncThunk(
 export const updateUserRole = createAsyncThunk(
   "admin/update-user-role",
   async ({ dispatch, userId, action, roleId }, { rejectWithValue }) => {
-    console.log(userId, action, roleId);
     try {
       const result = await apiClient(
         dispatch,
@@ -68,6 +67,22 @@ export const adminSignup = createAsyncThunk(
       const result = await apiClient(dispatch, "admin/signup", "POST", {
         body: JSON.stringify(data),
       });
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteAdminProfile = createAsyncThunk(
+  "admin/delete-admin",
+  async ({ dispatch, adminId, action }, { rejectWithValue }) => {
+    try {
+      const result = await apiClient(
+        dispatch,
+        `admin/delete-admin/${adminId}/${action}`,
+        "DELETE"
+      );
       return result;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -129,7 +144,15 @@ export const updatePermissionOfRole = createAsyncThunk(
 const adminSlice = createSlice({
   name: "admin",
   initialState,
-  reducers: {},
+  reducers: {
+    updateProfile: (state, action) => {
+      state.singleUser = {
+        ...state.singleUser,
+        fullName: action.payload.data.fullName,
+        email: action.payload.data.email,
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getAllRoles.pending, (state) => {
@@ -243,3 +266,4 @@ const adminSlice = createSlice({
 });
 
 export default adminSlice;
+export const { updateProfile } = adminSlice.actions;

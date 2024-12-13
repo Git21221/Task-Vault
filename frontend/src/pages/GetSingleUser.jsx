@@ -11,15 +11,15 @@ import {
   Divider,
   Button,
 } from "@mui/material";
-import { getSingleUser } from "../../redux/adminSlice";
+import { getSingleUser } from "../redux/adminSlice";
 import {
   deleteTask,
   getAllTasksOfUser,
   setOpenTaskModal,
-} from "../../redux/taskSlice";
-import { deleteUser } from "../../redux/userSlice";
-import TaskModal from "../../components/TaskModal";
-import { allStatus } from "../../utils/constant";
+} from "../redux/taskSlice";
+import { deleteUser } from "../redux/userSlice";
+import TaskModal from "../components/TaskModal";
+import { allStatus } from "../utils/constant";
 
 function GetSingleUser() {
   const dispatch = useDispatch();

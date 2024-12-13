@@ -36,12 +36,30 @@ export const deleteUser = createAsyncThunk(
   }
 );
 
+export const updateProfile = createAsyncThunk(
+  "user/updateProfile",
+  async ({ dispatch, data, userId, action }, { rejectWithValue }) => {
+    try {
+      const result = await apiClient(
+        dispatch,
+        `users/update-profile/${userId}/${action}`,
+        "PUT",
+        {
+          body: JSON.stringify(data),
+        }
+      );
+      return result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     removeUser: (state, action) => {
-      console.log(action.payload);
       state.users = state.users.filter(
         (user) => user._id !== action.payload.id
       );
@@ -54,7 +72,6 @@ const userSlice = createSlice({
       })
       .addCase(getAllUsers.fulfilled, (state, action) => {
         state.loading = false;
-        console.log(action.payload.data);
         state.users = action.payload.data;
       })
       .addCase(getAllUsers.rejected, (state, action) => {
@@ -67,12 +84,22 @@ const userSlice = createSlice({
       })
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.loading = false;
-        console.log(action.payload.data);
         state.users = state.users.filter(
           (user) => user._id !== action.payload.data._id
         );
       })
       .addCase(deleteUser.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.data;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
       });

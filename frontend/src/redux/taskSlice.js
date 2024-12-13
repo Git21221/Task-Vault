@@ -155,7 +155,6 @@ const taskSlice = createSlice({
       .addCase(getAllTasks.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks = action.payload.data;
-        console.log(action.payload.data);
         state.userTasks = action.payload.data.filter(
           (task) => task.owner.role.name === import.meta.env.VITE_USER_ROLE
         );
@@ -174,7 +173,6 @@ const taskSlice = createSlice({
         state.loading = true;
       })
       .addCase(updateTask.fulfilled, (state, action) => {
-        console.log(action.payload.data);
         state.loading = false;
         state.tasks = state.tasks.map((task) => {
           if (task._id === action.payload.data._id) {
@@ -224,10 +222,11 @@ const taskSlice = createSlice({
       })
       .addCase(getAllTasksOfUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.personTasksOfId = action.payload.data;
+        state.personTasksOfId = action.payload.data || [];
       })
       .addCase(getAllTasksOfUser.rejected, (state) => {
         state.loading = false;
+        state.personTasksOfId = [];
         state.error = "Error fetching tasks";
       });
   },

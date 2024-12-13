@@ -36,6 +36,7 @@ export const deleteMod = createAsyncThunk(
     }
   }
 );
+
 export const modSignup = createAsyncThunk(
   "mod/modSignup",
   async ({ dispatch, data }, { rejectWithValue }) => {
@@ -92,7 +93,6 @@ const modSlice = createSlice({
         state.loading = true;
       })
       .addCase(deleteMod.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.loading = false;
         state.mods = state.mods.filter(
           (mod) => mod._id !== action.payload.data._id
@@ -106,7 +106,6 @@ const modSlice = createSlice({
         state.loading = true;
       })
       .addCase(getSingleMod.fulfilled, (state, action) => {
-        console.log(action.payload);
         state.loading = false;
         state.singleMod = action.payload.data[0];
       })

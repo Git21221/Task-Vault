@@ -13,11 +13,12 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import { getAllRoles, updateUserRole } from "../../redux/adminSlice";
-import { deleteUser, getAllUsers, removeUser } from "../../redux/userSlice";
+import { getAllRoles, updateUserRole } from "../redux/adminSlice";
+import { deleteUser, getAllUsers, removeUser } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 
 function UserManagement() {
+  const { userRole } = useSelector((state) => state.auth);
   const { users } = useSelector((state) => state.user);
   const { roles } = useSelector((state) => state.admin); // Fetch roles from state
   const dispatch = useDispatch();
@@ -27,8 +28,10 @@ function UserManagement() {
   const [updatedRoles, setUpdatedRoles] = useState({}); // Track role changes for each user
 
   useEffect(() => {
-    dispatch(getAllRoles({dispatch,}));
-    dispatch(getAllUsers({dispatch,}));
+    userRole === import.meta.env.VITE_ADMIN_ROLE
+      ? dispatch(getAllRoles({ dispatch }))
+      : null;
+    dispatch(getAllUsers({ dispatch }));
   }, [dispatch]); // Fetch roles on component mount
 
   // Filtered users based on search and role
@@ -73,7 +76,11 @@ function UserManagement() {
   const handleDelete = (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       dispatch(
-        deleteUser({ dispatch,userId, action: import.meta.env.VITE_PROFILE_DELETE })
+        deleteUser({
+          dispatch,
+          userId,
+          action: import.meta.env.VITE_PROFILE_DELETE,
+        })
       );
     }
   };
@@ -113,7 +120,9 @@ function UserManagement() {
           <TableRow className="bg-blue-50">
             <TableCell>Full Name</TableCell>
             <TableCell>Email</TableCell>
-            <TableCell>Role</TableCell>
+            {userRole === import.meta.env.VITE_ADMIN_ROLE ? (
+              <TableCell>Role</TableCell>
+            ) : null}
             <TableCell>Permissions</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
@@ -130,23 +139,25 @@ function UserManagement() {
             >
               <TableCell>{user.fullName}</TableCell>
               <TableCell>{user.email}</TableCell>
-              <TableCell>
-                <Select
-                  value={
-                    updatedRoles[user._id] || user.updatedRoles[0]?._id || ""
-                  }
-                  onClick={(e) => e.stopPropagation()} // Stop propagation here
-                  onChange={(e) => {
-                    handleRoleChange(user._id, e.target.value);
-                  }}
-                >
-                  {roles.map((role) => (
-                    <MenuItem key={role._id} value={role._id}>
-                      {role.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </TableCell>
+              {userRole === import.meta.env.VITE_ADMIN_ROLE ? (
+                <TableCell>
+                  <Select
+                    value={
+                      updatedRoles[user._id] || user.updatedRoles[0]?._id || ""
+                    }
+                    onClick={(e) => e.stopPropagation()} // Stop propagation here
+                    onChange={(e) => {
+                      handleRoleChange(user._id, e.target.value);
+                    }}
+                  >
+                    {roles.map((role) => (
+                      <MenuItem key={role._id} value={role._id}>
+                        {role.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
+              ) : null}
               <TableCell>
                 {user.permissions && user.permissions.length > 0 ? (
                   user.permissions.map((permission, index) => (
@@ -161,19 +172,20 @@ function UserManagement() {
                 )}
               </TableCell>
               <TableCell>
-                {updatedRoles[user._id] && (
-                  <Button
-                    color="primary"
-                    variant="contained"
-                    sx={{ mr: 2 }}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent row click when updating role
-                      handleRoleUpdate(user._id);
-                    }}
-                  >
-                    Update
-                  </Button>
-                )}
+                {userRole === import.meta.env.VITE_ADMIN_ROLE &&
+                  updatedRoles[user._id] && (
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      sx={{ mr: 2 }}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click when updating role
+                        handleRoleUpdate(user._id);
+                      }}
+                    >
+                      Update
+                    </Button>
+                  )}
                 <Button
                   color="error"
                   variant="contained"

@@ -9,7 +9,6 @@ import { allStatus } from "../../utils/constant";
 function UserDashboard() {
   const { personTasksOfId, openTaskModal } = useSelector((state) => state.task);
   const { user } = useSelector((state) => state.auth);
-  console.log(personTasksOfId);
 
   const dispatch = useDispatch();
   const [openMoreModal, setOpenMoreModal] = React.useState({

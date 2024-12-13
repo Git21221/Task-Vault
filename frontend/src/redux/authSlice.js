@@ -3,7 +3,7 @@ import { apiClient } from "../utils/apiClient";
 import Cookies from "js-cookie";
 
 const initialState = {
-  user: null,
+  user: {},
   token: null,
   loading: false,
   error: null,
@@ -88,6 +88,13 @@ const authSlice = createSlice({
       state.userRole = null;
       Cookies.remove("accessToken");
     },
+    updateProfile: (state, action) => {
+      state.user = {
+        ...state.user,
+        fullName: action.payload.data.fullName,
+        email: action.payload.data.email,
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -160,4 +167,4 @@ const authSlice = createSlice({
 });
 
 export default authSlice;
-export const { logout, login } = authSlice.actions;
+export const { logout, login, updateProfile } = authSlice.actions;

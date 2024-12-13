@@ -19,7 +19,6 @@ function ManagePermissions() {
   const { roleWisePermissions, allPermissions } = useSelector(
     (state) => state.admin
   );
-  console.log(roleWisePermissions);
   const dispatch = useDispatch();
 
   const [roleUpdates, setRoleUpdates] = useState({}); // Track updated permissions for roles

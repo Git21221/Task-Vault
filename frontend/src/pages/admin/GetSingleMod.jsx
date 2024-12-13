@@ -19,7 +19,6 @@ function GetSingleMod() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { singleMod } = useSelector((state) => state.mod);
-  console.log(singleMod);
   const { personTasksOfId: modTasks } = useSelector((state) => state.task); // Assuming tasks are fetched similarly
   const { id } = useParams();
   const [hoveredTask, setHoveredTask] = useState(null);
@@ -42,7 +41,6 @@ function GetSingleMod() {
   }, [dispatch, id]);
 
   const handleDeleteMod = () => {
-    console.log("Delete mod with ID:", id);
     dispatch(
       deleteMod({
         dispatch,
@@ -54,7 +52,6 @@ function GetSingleMod() {
   };
 
   const handleDeleteTask = (taskId) => {
-    console.log("Delete task with ID:", taskId);
     dispatch(
       deleteTask({
         dispatch,
@@ -66,8 +63,7 @@ function GetSingleMod() {
   };
 
   const handleViewTask = (taskId) => {
-    console.log("View task with ID:", taskId);
-    // Logic to navigate or display task details
+    
   };
 
   return (
