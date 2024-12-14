@@ -294,21 +294,26 @@ export const getTasksOfUser = asyncFunctionHandler(async (req, res) => {
         owner: new mongoose.Types.ObjectId(userId),
       }
     },
-    // {
-    //   $lookup: {
-    //     from: "users",
-    //     localField: "owner",
-    //     foreignField: "_id",
-    //     as: "owner",
-    //     pipeline: [
-    //       {
-    //         $project: {
-    //           password: 0,
-    //         },
-    //       },
-    //     ],
-    //   },
-    // },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+        pipeline: [
+          {
+            $project: {
+              password: 0,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        owner: { $arrayElemAt: ["$owner", 0] },
+      },
+    }
   ]);
   if (!person)
     return res.status(404).json(new apiErrorHandler(404, "Person not found"));

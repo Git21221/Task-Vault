@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllTasksOfUser } from "../../redux/taskSlice";
-import TaskModal from "../../components/TaskModal";
-import TaskByCategory from "../../components/TaskByCategory";
-import AddTask from "../../components/AddTask";
-import { allStatus } from "../../utils/constant";
+import { getAllTasksOfUser } from "../redux/taskSlice";
+import TaskModal from "../components/TaskModal";
+import TaskByCategory from "../components/TaskByCategory";
+import AddTask from "../components/AddTask";
+import { allStatus } from "../utils/constant";
 
-function NotesAdmin() {
+function Notes() {
   const { personTasksOfId, openTaskModal } = useSelector((state) => state.task);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -45,4 +45,4 @@ function NotesAdmin() {
   );
 }
 
-export default NotesAdmin;
+export default Notes;

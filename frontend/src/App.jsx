@@ -21,7 +21,7 @@ import GetSingleMod from "./pages/admin/GetSingleMod";
 import Signup from "./pages/Signup";
 import Loader from "./components/Loader";
 import { useEffect } from "react";
-import NotesAdmin from "./pages/admin/NotesAdmin";
+import Notes from "./pages/Notes";
 import Profile from "./pages/Profile";
 import UserManagement from "./pages/UserManagement";
 
@@ -134,7 +134,7 @@ function App() {
               <Route
                 path="notes"
                 element={
-                  isLoggedIn ? <NotesAdmin /> : <Navigate to="/signin" replace />
+                  isLoggedIn ? <Notes /> : <Navigate to="/signin" replace />
                 }
               />
               <Route
@@ -180,6 +180,12 @@ function App() {
                 path="manage-users/user/:id"
                 element={
                   isLoggedIn ? <GetSingleUser /> : <Navigate to="/signin" replace />
+                }
+              />
+              <Route
+                path="notes"
+                element={
+                  isLoggedIn ? <Notes /> : <Navigate to="/signin" replace />
                 }
               />
               <Route

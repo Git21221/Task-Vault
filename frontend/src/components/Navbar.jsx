@@ -4,7 +4,7 @@ import { IoSearchOutline } from "react-icons/io5";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/authSlice";
-import { toggleSidebar } from "../redux/uiSlice";
+import { reRender, toggleSidebar } from "../redux/uiSlice";
 
 function Navbar() {
   const { user, userRole } = useSelector((state) => state.auth);
@@ -24,6 +24,10 @@ function Navbar() {
 
   const handleSidebar = () => {
     dispatch(toggleSidebar());
+  };
+
+  const handleRefresh = () => {
+    dispatch(reRender());
   };
 
   // Close modal or search popup when clicking outside
@@ -106,7 +110,7 @@ function Navbar() {
 
       {/* Right: Icons and Profile */}
       <div className="flex flex-1 items-center justify-end gap-6">
-        <IoMdRefresh className="text-gray-500 text-5xl hover:bg-gray-200 p-2 rounded-full" />
+        <IoMdRefresh className="text-gray-500 text-5xl hover:bg-gray-200 p-2 rounded-full" onClick={handleRefresh} />
         <div
           onClick={handleProfileClick}
           className="w-8 h-8 select-none bg-gray-400 rounded-full flex items-center justify-center text-white text-xl cursor-pointer"

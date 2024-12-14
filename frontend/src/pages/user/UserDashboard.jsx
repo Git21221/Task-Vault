@@ -8,6 +8,7 @@ import { allStatus } from "../../utils/constant";
 
 function UserDashboard() {
   const { personTasksOfId, openTaskModal } = useSelector((state) => state.task);
+  console.log(personTasksOfId);
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();

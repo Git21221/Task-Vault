@@ -7,6 +7,7 @@ import Sidebar from "../../components/Sidebar";
 
 function UserLayout() {
   const { user } = useSelector((state) => state.auth);
+  const { count } = useSelector((state) => state.ui);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -23,7 +24,7 @@ function UserLayout() {
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
-        <div className="flex-1 p-4 w-full h-[calc(100vh-62px)] overflow-y-auto">
+        <div key={count} className="flex-1 p-4 w-full h-[calc(100vh-62px)] overflow-y-auto">
           <Outlet />
         </div>
       </div>

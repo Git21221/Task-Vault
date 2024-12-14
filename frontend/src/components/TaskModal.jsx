@@ -5,6 +5,8 @@ import { Button, FormWrapper } from "form-snippet";
 import { allStatus } from "../utils/constant";
 
 function TaskModal({ openTaskModal }) {
+  console.log(openTaskModal);
+  
   const [task, setTask] = useState(openTaskModal?.title || "");
   const [status, setStatus] = useState(openTaskModal?.status || "");
   const [description, setDescription] = useState(
@@ -28,7 +30,7 @@ function TaskModal({ openTaskModal }) {
               description: description || "",
               status: status,
               taskId: openTaskModal?._id,
-              userId: openTaskModal?.owner,
+              userId: openTaskModal?.owner._id,
               action: import.meta.env.VITE_TASK_UPDATE,
             })
           );
@@ -53,7 +55,7 @@ function TaskModal({ openTaskModal }) {
           description: description || "",
           status: status,
           taskId: openTaskModal?._id,
-          userId: openTaskModal?.owner,
+          userId: openTaskModal?.owner._id,
           action: import.meta.env.VITE_TASK_UPDATE,
         })
       );

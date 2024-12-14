@@ -72,7 +72,13 @@ const Sidebar = () => {
         path: "moderator-dashboard",
       },
       { id: 2, label: "Manage Users", icon: <FiUsers />, path: "manage-users" },
-      { id: 3, label: "Profile", icon: <FaRegUser />, path: "profile" },
+      {
+        id: 3,
+        label: "Notes",
+        icon: <FaRegLightbulb />,
+        path: "notes",
+      },
+      { id: 4, label: "Profile", icon: <FaRegUser />, path: "profile" },
     ],
   };
 
